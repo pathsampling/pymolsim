@@ -70,6 +70,7 @@ class Potential
 		vector<double> fj{0., 0., 0.};
 		void forces(vector<double> );
 		void potential_energy(vector<double>);
+		void init();
 };
 
 
@@ -106,6 +107,7 @@ class Thermostat
 		       nhlc1,  		//       "             c1 coefficient
 		       nhlc2,     	//       "             c2 coefficient
 		       nhlxi;      	//       "             extended variable
+		void init(double, double);
 };
 
 class Barostat
@@ -119,6 +121,7 @@ class Barostat
 		double lgamma,		//Langevin friction for piston
 		       lc1,		//Langevin c1 coefficient
 		       lc2;		//Langevin c2 coefficient
+		void init(double, double);
 };
 
 
