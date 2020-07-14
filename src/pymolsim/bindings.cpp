@@ -104,6 +104,11 @@ PYBIND11_MODULE(cmolsim, m) {
 		.def_readwrite("virial", &Potential::virial)
 		.def_readwrite("hypervirial", &Potential::hypervirial)
 		.def_readwrite("stress", &Potential::stress)
+		.def_readwrite("fi", &Potential::fi)
+		.def_readwrite("fj", &Potential::fj)
+		.def("forces", &Potential::forces)
+		.def("potential_energy", &Potential::potential_energy)
+		.def("init", &Potential::init)
 		;
 
 	py::class_<Particle>(m, "Particle")
@@ -130,6 +135,9 @@ PYBIND11_MODULE(cmolsim, m) {
 		.def_readwrite("nhlc1", &Thermostat::nhlc1)
 		.def_readwrite("nhlc2", &Thermostat::nhlc2)
 		.def_readwrite("nhlxi", &Thermostat::nhlxi)
+		.def_readwrite("dElangevin", &Thermostat::dElangevin)
+		.def("init", &Thermostat::init)
+		.def("init_nhl", &Thermostat::init_nhl)
 		;
 
 	py::class_<Barostat>(m, "Barostat")
@@ -140,8 +148,16 @@ PYBIND11_MODULE(cmolsim, m) {
 		.def_readwrite("lgamma", &Barostat::lgamma)
 		.def_readwrite("lc1", &Barostat::lc1)
 		.def_readwrite("lc2", &Barostat::lc2)
+		.def("init", &Barostat::init)
 		;
 
+	py::class_<Average>(m, "Average")
+		.def(py::init< >())
+		.def_readwrite("name", &Average::name)
+		.def_readwrite("now", &Average::now)
+		.def_readwrite("sum", &Average::sum)
+		.def_readwrite("sumsq", &Average::sumsq)
+		;
 	//read input will be deprecated
 	//read init_structure and read_initlammpsdump
     //needs binding
