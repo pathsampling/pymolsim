@@ -1,0 +1,11 @@
+*.pyc
+*~
+*#
+*.nfs*
+__pycache__/
+build/
+dist/
+*.egg*
+.cache
+docs/html/*
+docs/doctrees/*
