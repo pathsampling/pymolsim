@@ -264,6 +264,25 @@ class System
 
 		void init();
 
+		//md methods
+		void md_step();
+		void md_verlet();
+		void md_langevin();
+		void md_andersen();
+		void md_nosehooverlangevin_NVT();
+		void md_andersen_NPH();
+		void md_andersen_stochastic_NPT();
+		void md_andersen_stochastic_nhlthermo_NPT();
+		void langevin_thermo();
+		void langevin_baro();
+		void propagate_momenta_half();
+		void propagate_position_half();
+		void propagate_momenta_xi();
+		void langevin_xi();
+		void propagate_position_half_scale(double *);
+		void rescale_position_momenta(double *);
+
+
 
 };
 
@@ -316,27 +335,6 @@ void update_display(System &,Particle *);
 void convert_coordinates(System &,Particle &,double *);
 void display_sph1(double *);
 void print_test(char *);
-
-
-//in md.cpp
-void md_step(System &, Particle *,Potential &, Thermostat &, Barostat &);
-
-void md_verlet(System &, Particle *,Potential &);
-void md_langevin(System &, Particle *,Potential &, Thermostat &);
-void md_andersen(System &, Particle *,Potential &, Thermostat &);
-void md_nosehooverlangevin_NVT(System &, Particle *,Potential &, Thermostat &);
-void md_andersen_NPH(System &, Particle *, Potential &, Barostat &);
-void md_andersen_stochastic_NPT(System &, Particle *, Potential &, Barostat &);
-void md_andersen_stochastic_nhlthermo_NPT(System &,Particle *,Potential &,Barostat &,Thermostat &);
-
-void langevin_thermo(System &, Particle *, Thermostat &);
-void langevin_baro(Barostat &);
-void propagate_momenta_half(System &, Particle *);
-void propagate_position_half(System &, Particle *);
-void propagate_momenta_xi(System &, Particle *, Thermostat &);
-void langevin_xi(Thermostat &);
-void propagate_position_half_scale(System &, Particle *, double *);
-void rescale_position_momenta(System &, Particle *, double *);
 
 
 //in print.cpp
