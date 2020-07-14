@@ -108,6 +108,8 @@ class Thermostat
 		       nhlc2,     	//       "             c2 coefficient
 		       nhlxi;      	//       "             extended variable
 		void init(double, double);
+		void init_nhl(double, double);
+		double dElangevin;
 };
 
 class Barostat
@@ -181,7 +183,7 @@ class System
 		vector<double> p{0., 0., 0.};
 
 
-		double dElangevin;	//negative sum of increments of energy contributions
+			//negative sum of increments of energy contributions
 					//from Langevin thermostat
 
 		double Tinst,		//instantaneous temperature
@@ -259,6 +261,8 @@ class System
 		void average();
 		void sample_average();
 		void init_average();
+
+		void init();
 
 
 };

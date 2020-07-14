@@ -4,7 +4,7 @@
 //--------------------------------initialize energies and velocities for read in structure---------------------------
 
 
-void System::init_ene(){
+void System::init(){
 
 	int i,j;
 	double V,K;
