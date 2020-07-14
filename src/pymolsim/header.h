@@ -46,6 +46,97 @@ using namespace std;
 
 //-------------------------------------------classes---------------------------------------
 
+class Potential
+{
+	public:
+		double sigma,
+		       epsilon;
+		
+		double c1,
+		       c2,
+		       c3,
+		       c4,
+		       c5;
+		
+		double rmin2,
+		       rmax2;
+};
+
+
+class Particle
+{
+	public:
+		vector<double> r{0., 0., 0.};
+		vector<double> v{0., 0., 0.};
+		vector<double> f{0., 0., 0.};
+		double energy;
+		int type;
+		double mass;
+
+		vector<double> c{0., 0.};	//to calculate system state
+				//c[0] = c_r
+				//c[1] = c_r * c_alpha
+		double c_z;	// c_z
+		double phi;	//to calculate collective variable
+
+		double vt0[3][VACF_MAXT0];	//velocities at different time origins
+};
+
+class Thermostat
+{
+	public:
+		double lgamma,		//Langevin friction
+		       lc1,		//Langevin c1 coefficient
+		       lc2;		//Langevin c2 coefficient
+
+		double anu;		//Andersen collision frequency
+
+		double nhlgamma,  	//Nose-Hoover-Langevin friction
+		       nhlmu, 		//       "             mass
+		       nhlc1,  		//       "             c1 coefficient
+		       nhlc2,     	//       "             c2 coefficient
+		       nhlxi;      	//       "             extended variable
+};
+
+class Barostat
+{
+	public:
+		bool isotropic;		//isotropic or anisotropic barostat
+
+		double pv,		//piston velocity
+		       pmass;		//piston mass
+
+		double lgamma,		//Langevin friction for piston
+		       lc1,		//Langevin c1 coefficient
+		       lc2;		//Langevin c2 coefficient
+};
+
+
+class Average
+{
+	public:
+		char *name;
+
+		int64_t n,
+			in;
+
+		long double now,
+		            sum,
+		            sumsq;
+};
+
+
+class Statistic
+{
+	public:
+		Average Ekin,		//kinetic energy
+			T,
+			p[3];		//momentum
+		
+		//constructor
+		Statistic();
+};
+
 
 class System
 {
@@ -129,99 +220,13 @@ class System
 		    vacf_countt0;			//count no. of time origins
 
 
-};
-
-
-class Potential
-{
-	public:
-		double sigma,
-		       epsilon;
+		//holds individual properties
+		vector<Particle> pparticle;
 		
-		double c1,
-		       c2,
-		       c3,
-		       c4,
-		       c5;
-		
-		double rmin2,
-		       rmax2;
+
+
 };
 
-
-class Particle
-{
-	public:
-		double r[3],
-		       v[3],
-		       f[3],
-		       energy;
-
-		double mass;
-
-		double c[2];	//to calculate system state
-				//c[0] = c_r
-				//c[1] = c_r * c_alpha
-		double c_z;	// c_z
-		double phi;	//to calculate collective variable
-
-		double vt0[3][VACF_MAXT0];	//velocities at different time origins
-};
-
-class Thermostat
-{
-	public:
-		double lgamma,		//Langevin friction
-		       lc1,		//Langevin c1 coefficient
-		       lc2;		//Langevin c2 coefficient
-
-		double anu;		//Andersen collision frequency
-
-		double nhlgamma,  	//Nose-Hoover-Langevin friction
-		       nhlmu, 		//       "             mass
-		       nhlc1,  		//       "             c1 coefficient
-		       nhlc2,     	//       "             c2 coefficient
-		       nhlxi;      	//       "             extended variable
-};
-
-class Barostat
-{
-	public:
-		bool isotropic;		//isotropic or anisotropic barostat
-
-		double pv,		//piston velocity
-		       pmass;		//piston mass
-
-		double lgamma,		//Langevin friction for piston
-		       lc1,		//Langevin c1 coefficient
-		       lc2;		//Langevin c2 coefficient
-};
-
-
-class Average
-{
-	public:
-		char *name;
-
-		int64_t n,
-			in;
-
-		long double now,
-		            sum,
-		            sumsq;
-};
-
-
-class Statistic
-{
-	public:
-		Average Ekin,		//kinetic energy
-			T,
-			p[3];		//momentum
-		
-		//constructor
-		Statistic();
-};
 
 
 //-------------------------------------------functions-------------------------------------------------------
