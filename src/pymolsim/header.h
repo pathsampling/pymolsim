@@ -141,18 +141,6 @@ class Average
 };
 
 
-class Statistic
-{
-	public:
-		Average Ekin,		//kinetic energy
-			T,
-			p[3];		//momentum
-		
-		//constructor
-		Statistic();
-};
-
-
 class System
 {
 	public:
@@ -274,9 +262,6 @@ class System
 		//averaging methods
 		vector<double> image_distance(int, int);
 		void remap();
-		void average();
-		void sample_average();
-		void init_average();
 
 		void init();
 
@@ -326,34 +311,11 @@ double gauss();
 //specific
 void kinetic_stress(Particle *, System &);
 
-//in print.cpp
-void print_lammps_dump(System &, Particle *, ofstream &);
-void init_print_lammps_trajectory(System &, Particle *, ofstream &);
-void print_lammps_trajectory(System &, Particle *, ofstream &);
-void print_output(System &, Particle *, Average *, Potential &,int ,int );
-
-
-//in main.cpp
-int main_program();
-void terminate_block(System);
-void final_block(System);
 
 
 
 
 //-------------------------------------------Global variables------------------------------------------------
-
-extern Statistic block_stats;
-extern Statistic final_stats;
-extern char g_flname[FILENAME_MAX+1];  //file name
-extern bool g_display;		//run with or without display
-extern float g_Distance;	//set zoom in display
-
-extern ofstream fpscreen;	//capture screen output
-
-extern FILE *fp[2];		//output file pointer
-
-
 
 
 
