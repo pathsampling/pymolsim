@@ -120,7 +120,7 @@ void Barostat::init(double dt, double beta)
 
 //--------------------------------------initialise Nose-Hoover-Langevin------------------------------------------------
 
-void Thermostat::init_nhl(double dt, double beta)
+void Thermostat::init_nhl(double dt, double beta, int integrator)
 {
 	//Ref:  Ben Leimkuhler (A gentle thermostat)
 	//coefficents are

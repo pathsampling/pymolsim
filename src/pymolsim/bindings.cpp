@@ -33,7 +33,6 @@ PYBIND11_MODULE(cmolsim, m) {
 		.def_readwrite("dt", &System::dt)
 		.def_readwrite("time", &System::time)
 		.def_readwrite("tot_energy", &System::tot_energy)
-		.def_readwrite("dElangevin", &System::dElangevin)
 		.def_readwrite("Tinst", &System::Tinst)
 		.def_readwrite("Pinst", &System::Pinst)
 		.def_readwrite("Pinst_1", &System::Pinst_1)

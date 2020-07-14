@@ -108,7 +108,7 @@ class Thermostat
 		       nhlc2,     	//       "             c2 coefficient
 		       nhlxi;      	//       "             extended variable
 		void init(double, double);
-		void init_nhl(double, double);
+		void init_nhl(double, double, int);
 		double dElangevin;
 };
 
