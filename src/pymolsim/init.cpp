@@ -64,6 +64,39 @@ void System::init(){
 }
 
 
+vector<Particle> System::gparticles(){
+	return particles;
+}
+void System::sparticles(vector<Particle> sparticles){
+	particles = sparticles;
+}
+Potential System::gpotential(){
+	return potential;
+}
+void System::spotential(Potential spot){
+	potential = spot;
+}
+
+Thermostat System::gthermostat(){
+	return thermostat;
+}
+void System::sthermostat(Thermostat stherm){
+	thermostat = stherm;
+}
+
+Barostat System::gbarostat(){
+	return barostat;
+}
+void System::sbarostat(Barostat sbar){
+	barostat = sbar;
+}
+
+vector<Average> System::gaverage(){
+	return pAv;
+}
+void System::saverage(vector<Average> svg){
+	pAv = svg;
+}
 //--------------------------initialise Lennard-Jones potential---------------------------------------------------------
 
 void Potential::init()

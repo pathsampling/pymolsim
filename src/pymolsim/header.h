@@ -244,6 +244,22 @@ class System
 		Thermostat thermostat;
 		Barostat barostat;
 		vector<Average> pAv;
+		
+		vector<Particle> gparticles();
+		void sparticles(vector<Particle> );
+
+		Potential gpotential();
+		void spotential(Potential);
+
+		Thermostat gthermostat();
+		void sthermostat(Thermostat);
+
+		Barostat gbarostat();
+		void sbarostat(Barostat);
+
+		vector<Average> gaverage();
+		void saverage(vector<Average>);
+
 		//pyscal integration to read in files
 		//will implement on the python side
 		//force methods
@@ -304,25 +320,11 @@ double ran3(int=1);
 double RandomVelocity(double,double);
 double gauss();
 
-//WE WILL COME BACK and IMPLEMENT THIS
-//in init.cpp
-void init(Particle *,System,Potential);
-void init_ene(Particle *,System &,Potential &);
-void relax_steep(Particle *,System &,Potential &);
-void init_structure(System &, Particle *, Potential &);
-void init_lj(Potential &);
-void init_langevin(Thermostat &, System &);
-void init_langevin_piston(Barostat &, System);
-void init_nhl(Thermostat &, System);
-
 
 //ALL THESE METHODS WOULD BE MOVED TO POTENTIAL/SYSTEM
 //in forces.cpp
 //specific
 void kinetic_stress(Particle *, System &);
-
-
-
 
 //in print.cpp
 void print_lammps_dump(System &, Particle *, ofstream &);
