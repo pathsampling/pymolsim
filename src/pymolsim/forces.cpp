@@ -113,7 +113,7 @@ void Potential::potential_energy(vector<double> dr)
 
 
 //Now we need a equivalent wrapper implementation in system
-void System::forces()
+void Sim::forces()
 {
 	
 	//initialize forces
@@ -157,7 +157,7 @@ void System::forces()
 
 //---------------------------------------------calculate potential energy-----------------------------------------
 
-void System::potential_energy()
+void Sim::potential_energy()
 {
 	pe = 0.0;
 	//loop over all particle pairs
@@ -173,7 +173,7 @@ void System::potential_energy()
 
 //-------------------------------------------------calculate kinetic energy---------------------------------------
 
-void System::kinetic_energy()
+void Sim::kinetic_energy()
 {
 	
 	ke = 0.0;
@@ -190,7 +190,7 @@ void System::kinetic_energy()
 
 //-----------------------------------------------calculate total energy-------------------------------------------
 
-void System::total_energy()
+void Sim::total_energy()
 {
 	double K,V;
 	kinetic_energy();
@@ -200,7 +200,7 @@ void System::total_energy()
 
 //-----------------------------------------------calculate total momentum-----------------------------------------
 
-void System::total_momentum()
+void Sim::total_momentum()
 {
 
 	for(int i=0;i<3;i++){
@@ -215,7 +215,7 @@ void System::total_momentum()
 }
 
 //-------------------------------------------------rescale velocities to desired temperature--------------------------
-void System::rescale_velocities()
+void Sim::rescale_velocities()
 {
 	int i,j;
 	double T,T_aim,c;

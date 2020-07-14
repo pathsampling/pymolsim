@@ -3,7 +3,7 @@
 
 //--------------------------------------do an MD step with the chosen integrator----------------------------------
 
-void System::md_step()
+void Sim::md_step()
 {
 	if(integrator == 0){
 		//velocity verlet, NVE
@@ -44,7 +44,7 @@ void System::md_step()
 
 //------------------------------------------do a velocity verlet move---------------------------------------------
 
-void System::md_verlet()
+void Sim::md_verlet()
 {
 	//do half step algorithm (a bit redundant, but just for proof that it works
 
@@ -60,7 +60,7 @@ void System::md_verlet()
 
 //---------------------------------------------do langevin integration step--------------------------------------------
 
-void System::md_langevin()
+void Sim::md_langevin()
 {
 
 	//Ref:  Bussi, Parrinello, PRE 75, 056707 (2007)	
@@ -79,7 +79,7 @@ void System::md_langevin()
 
 //---------------------------------------------do langevin integration step--------------------------------------------
 
-void System::md_andersen()
+void Sim::md_andersen()
 {
 
 	int i,j;
@@ -101,7 +101,7 @@ void System::md_andersen()
 
 //------------------------------------------do a Nose-Hoover-Langevin move----------------------------------------------------------------
 
-void System::md_nosehooverlangevin_NVT()
+void Sim::md_nosehooverlangevin_NVT()
 {
 	double K,Nf;
 	//do half step algorithm
@@ -136,7 +136,7 @@ void System::md_nosehooverlangevin_NVT()
 
 //----------------------------------------do Andersen NPH integration step----------------------------------------------
 
-void System::md_andersen_NPH()
+void Sim::md_andersen_NPH()
 {
 	//constant pressure extended system approach by Andersen
 	//Ref:  Andersen, JCP 72, 2384 (1980)
@@ -282,7 +282,7 @@ void System::md_andersen_NPH()
 
 //----------------------------------------do Andersen-stochastic NPT integration step----------------------------------------------
 
-void System::md_andersen_stochastic_NPT()
+void Sim::md_andersen_stochastic_NPT()
 {
 
 	// due to coupling of the piston to a heat bath, this is formally an NPT ensemble
@@ -302,7 +302,7 @@ void System::md_andersen_stochastic_NPT()
 }
 
 //----------------------------------------stochastic anderson barostat + NHL thermostat---------------------------------------------------
-void System::md_andersen_stochastic_nhlthermo_NPT()
+void Sim::md_andersen_stochastic_nhlthermo_NPT()
 {
 	int i;
 	double K,Nf;
@@ -404,7 +404,7 @@ void System::md_andersen_stochastic_nhlthermo_NPT()
 
 //------------------------------------------langevin thermostat of velocities------------------------------------------
 
-void System::langevin_thermo()
+void Sim::langevin_thermo()
 {
 	int i,j;
 
@@ -422,7 +422,7 @@ void System::langevin_thermo()
 
 //------------------------------------------langevin thermostat of piston velocity-------------------------------------
 
-void System::langevin_baro()
+void Sim::langevin_baro()
 {
 
 	//Ref:  Bussi, Parrinello, PRE 75, 056707 (2007)	
@@ -437,7 +437,7 @@ void System::langevin_baro()
 
 //---------------------------------------propagate momenta 1/2 time step------------------------------------------------------------------
 
-void System::propagate_momenta_half()
+void Sim::propagate_momenta_half()
 {
 	double dt;
 	int i,j;
@@ -453,7 +453,7 @@ void System::propagate_momenta_half()
 
 //----------------------------------------------propagate positions 1/2 time step---------------------------------------------------------
 
-void System::propagate_position_half()
+void Sim::propagate_position_half()
 {
 	double dt;
 	int i,j;
@@ -469,7 +469,7 @@ void System::propagate_position_half()
 
 //---------------------------------------propagate momenta 1/2 time step with xi----------------------------------------------------------
 
-void System::propagate_momenta_xi()
+void Sim::propagate_momenta_xi()
 {
 	double c;
 	int i,j;
@@ -487,7 +487,7 @@ void System::propagate_momenta_xi()
 
 //------------------------------------------langevin thermostat of nose-hover extended variable------------------------
 
-void System::langevin_xi()
+void Sim::langevin_xi()
 {
 	thermostat.nhlxi = thermostat.nhlc1*thermostat.nhlxi + thermostat.nhlc2*gauss();
 }
@@ -495,7 +495,7 @@ void System::langevin_xi()
 
 //----------------------------------------------propagate positions 1/2 time step and scale-----------------------------------------------
 
-void System::propagate_position_half_scale(double *pscale)
+void Sim::propagate_position_half_scale(double *pscale)
 {
 	double dt;
 	int i,j;
@@ -511,7 +511,7 @@ void System::propagate_position_half_scale(double *pscale)
 
 //----------------------------------------------rescale positions and momenta for barostat------------------------------------------------
 
-void System::rescale_position_momenta(double *pscale)
+void Sim::rescale_position_momenta(double *pscale)
 {
 	int i,j;
 

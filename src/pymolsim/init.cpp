@@ -4,7 +4,7 @@
 //--------------------------------initialize energies and velocities for read in structure---------------------------
 
 
-void System::init(){
+void Sim::init(){
 
 	int i,j;
 	double V,K;
@@ -64,37 +64,37 @@ void System::init(){
 }
 
 
-vector<Particle> System::gparticles(){
+vector<Particle> Sim::gparticles(){
 	return particles;
 }
-void System::sparticles(vector<Particle> sparticles){
+void Sim::sparticles(vector<Particle> sparticles){
 	particles = sparticles;
 }
-Potential System::gpotential(){
+Potential Sim::gpotential(){
 	return potential;
 }
-void System::spotential(Potential spot){
+void Sim::spotential(Potential spot){
 	potential = spot;
 }
 
-Thermostat System::gthermostat(){
+Thermostat Sim::gthermostat(){
 	return thermostat;
 }
-void System::sthermostat(Thermostat stherm){
+void Sim::sthermostat(Thermostat stherm){
 	thermostat = stherm;
 }
 
-Barostat System::gbarostat(){
+Barostat Sim::gbarostat(){
 	return barostat;
 }
-void System::sbarostat(Barostat sbar){
+void Sim::sbarostat(Barostat sbar){
 	barostat = sbar;
 }
 
-vector<Average> System::gaverage(){
+vector<Average> Sim::gaverage(){
 	return pAv;
 }
-void System::saverage(vector<Average> svg){
+void Sim::saverage(vector<Average> svg){
 	pAv = svg;
 }
 //--------------------------initialise Lennard-Jones potential---------------------------------------------------------

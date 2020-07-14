@@ -2,7 +2,7 @@
 
 //-------------------------------calculate distance between two particles----------------------
 
-vector<double> System::image_distance(int part_1, int part_2){
+vector<double> Sim::image_distance(int part_1, int part_2){
 
 	int i;
 	vector<double> dr{0., 0., 0.};
@@ -23,7 +23,7 @@ vector<double> System::image_distance(int part_1, int part_2){
 
 //------------------------------------------remap the system into the box-------------------------------
 
-void System::remap(){
+void Sim::remap(){
 
 	int i,j;
 	for(i=0;i<nparticles;i++){

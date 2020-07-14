@@ -141,7 +141,7 @@ class Average
 };
 
 
-class System
+class Sim
 {
 	public:
 		int64_t ncycle1,
@@ -293,10 +293,10 @@ class System
 
 //DEPRECATED
 // in readinput.cpp
-//void readinput(System &, Potential &, Thermostat &, Barostat &, int &,int argc,char *argv[]);
-void readinput(System &, Potential &, Thermostat &, Barostat &, int &);
-void read_initstructure(System &,Particle *);
-void read_initlammpsdump(System &, Particle *);
+//void readinput(Sim &, Potential &, Thermostat &, Barostat &, int &,int argc,char *argv[]);
+void readinput(Sim &, Potential &, Thermostat &, Barostat &, int &);
+void read_initstructure(Sim &,Particle *);
+void read_initlammpsdump(Sim &, Particle *);
 
 
 //THIS CAN REMAIN THE SAME - oustide use is not required
@@ -309,7 +309,7 @@ double gauss();
 //ALL THESE METHODS WOULD BE MOVED TO POTENTIAL/SYSTEM
 //in forces.cpp
 //specific
-void kinetic_stress(Particle *, System &);
+void kinetic_stress(Particle *, Sim &);
 
 
 
