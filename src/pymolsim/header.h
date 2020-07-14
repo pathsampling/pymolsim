@@ -324,19 +324,6 @@ void kinetic_stress(Particle *, System &);
 
 
 
-//in draw3D.cpp draw3D.h
-extern void draw_stuff();
-extern void init_graphics(int arc, char *argv[]);
-extern void Idle();
-extern void Display();
-extern void Init_Graphics(int argc, char *argv[]);
-void draw_box(double *,double); 
-void update_display(System &,Particle *);
-void convert_coordinates(System &,Particle &,double *);
-void display_sph1(double *);
-void print_test(char *);
-
-
 //in print.cpp
 void print_lammps_dump(System &, Particle *, ofstream &);
 void init_print_lammps_trajectory(System &, Particle *, ofstream &);
