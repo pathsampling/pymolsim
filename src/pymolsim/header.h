@@ -60,6 +60,16 @@ class Potential
 		
 		double rmin2,
 		       rmax2;
+		
+		double virial;		//virial part of the pressure
+		double hypervirial;	//hypervirial to calculate thermodynamic properties
+		double press_kin;	//kinetic part of the pressure
+		double energy;
+		vector<double> stress {0, 0, 0, 0, 0, 0, 0, 0, 0};	//instantaneous stress tensor
+		vector<double> fi{0., 0., 0.};
+		vector<double> fj{0., 0., 0.};
+		void forces(vector<double> );
+		void potential_energy(vector<double>);
 };
 
 
@@ -115,7 +125,7 @@ class Barostat
 class Average
 {
 	public:
-		char *name;
+		string name;
 
 		int64_t n,
 			in;
@@ -150,9 +160,7 @@ class System
 		    outputrate;	//rate of writing output
 
 		int nparticles;	//number of particles
-
 		int readstruc;	//read in or create structure
-
 		double E0;	//initial energy
 
 
@@ -164,6 +172,11 @@ class System
 		       dt,		//time step
 		       time,		//total time
 		       tot_energy;	//total energy for NVE
+
+		double pe;
+		double ke;
+		vector<double> p{0., 0., 0.};
+
 
 		double dElangevin;	//negative sum of increments of energy contributions
 					//from Langevin thermostat
@@ -221,8 +234,28 @@ class System
 
 
 		//holds individual properties
-		vector<Particle> pparticle;
-		
+		vector<Particle> particles;
+		Potential potential;
+		Thermostat thermostat;
+		Barostat barostat;
+		vector<Average> pAv;
+		//pyscal integration to read in files
+		//will implement on the python side
+		//force methods
+		void forces();
+		void potential_energy();
+		void kinetic_energy();
+		void total_energy();
+		void total_momentum();
+		void rescale_velocities();
+
+
+		//averaging methods
+		vector<double> image_distance(int, int);
+		void remap();
+		void average();
+		void sample_average();
+		void init_average();
 
 
 };
@@ -231,17 +264,21 @@ class System
 
 //-------------------------------------------functions-------------------------------------------------------
 
+//DEPRECATED
 // in readinput.cpp
 //void readinput(System &, Potential &, Thermostat &, Barostat &, int &,int argc,char *argv[]);
 void readinput(System &, Potential &, Thermostat &, Barostat &, int &);
 void read_initstructure(System &,Particle *);
 void read_initlammpsdump(System &, Particle *);
 
+
+//THIS CAN REMAIN THE SAME - oustide use is not required
 //in ran3.cpp
 double ran3(int=1);
 double RandomVelocity(double,double);
 double gauss();
 
+//WE WILL COME BACK and IMPLEMENT THIS
 //in init.cpp
 void init(Particle *,System,Potential);
 void init_ene(Particle *,System &,Potential &);
@@ -253,32 +290,11 @@ void init_langevin_piston(Barostat &, System);
 void init_nhl(Thermostat &, System);
 
 
+//ALL THESE METHODS WOULD BE MOVED TO POTENTIAL/SYSTEM
 //in forces.cpp
-void forces(Particle *,System &,Potential &);
-double potential_energy(Particle *,System &,Potential &);
-double kinetic_energy(Particle *,System &);
-double total_energy(Particle *,System &,Potential &);
-void total_momentum(Particle *,double *,System &);
-void rescale_velocities(Particle *,System &);
+//specific
 void kinetic_stress(Particle *, System &);
 
-
-//in analyse.cpp
-void image_distance(Particle &,Particle &,double *,System &);
-void remap(System &, Particle *);
-void average(System &, Particle *);
-void sample_average(System &, Particle *, Average *, Potential &);
-void init_average(Average *);
-
-void init_rdf(System &);
-void sample_rdf(System &, Particle *);
-void print_rdf(System &);
-void init_histo(System &);
-void sample_histo(System &, Particle *);
-void print_histo(System &);
-void init_vacf(System &, Particle *);
-void sample_vacf(System &, Particle *);
-void print_vacf(System &);
 
 
 

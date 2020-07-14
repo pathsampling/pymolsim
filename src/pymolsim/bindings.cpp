@@ -66,6 +66,9 @@ PYBIND11_MODULE(cmolsim, m) {
 		.def_readwrite("c5", &Potential::c5)
 		.def_readwrite("rmin2", &Potential::rmin2)
 		.def_readwrite("rmax2", &Potential::rmax2)
+		.def_readwrite("virial", &Potential::virial)
+		.def_readwrite("hypervirial", &Potential::hypervirial)
+		.def_readwrite("stress", &Potential::stress)
 		;
 
 	py::class_<Particle>(m, "Particle")
