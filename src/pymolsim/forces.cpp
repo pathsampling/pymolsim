@@ -115,7 +115,7 @@ void Potential::potential_energy(vector<double> dr)
 //Now we need a equivalent wrapper implementation in system
 void Sim::forces()
 {
-	
+	//cout<<"I ran0";
 	//initialize forces
 	//TODO : Set nparticles
 	for(int i=0;i<nparticles;i++){
@@ -135,13 +135,14 @@ void Sim::forces()
 			//call forces here
 			potential.forces(dr);
 			//now we need to update the forces
+			//cout<<potential.fi[0]<<endl;
 			for(int c=0; c<3; c++){
 				particles[i].f[c] += potential.fi[c];
 				particles[j].f[c] += potential.fj[c];
 			}
 		}
 	}
-
+	//cout<<"I ran";
 	for(int m=0;m<3;m++){
 		for(int n=0;n<3;n++){
 			stress[3*m+n] = potential.stress[3*m+n]/volume;

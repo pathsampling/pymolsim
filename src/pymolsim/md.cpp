@@ -7,7 +7,10 @@ void Sim::md_step()
 {
 	if(integrator == 0){
 		//velocity verlet, NVE
+		//cout<<"----------------"<<endl;
+		//cout<<particles[0].r[0]<<endl;
 		md_verlet();
+		//cout<<particles[0].r[0]<<endl;
 	}
 	else if (integrator == 1){
 		//langevin thermostat, NVT
@@ -144,7 +147,7 @@ void Sim::md_andersen_NPH()
 
 
 	int i,j;
-	double dt;
+
 	double K;
 	double Vold,Vnew;
 	double lbox[3];
@@ -306,7 +309,7 @@ void Sim::md_andersen_stochastic_nhlthermo_NPT()
 {
 	int i;
 	double K,Nf;
-	double dt;
+
 	double Vnew;
 	double lbox[3],scale[3];
 
@@ -439,7 +442,7 @@ void Sim::langevin_baro()
 
 void Sim::propagate_momenta_half()
 {
-	double dt;
+
 	int i,j;
 
 	//loop over all particles
@@ -455,12 +458,14 @@ void Sim::propagate_momenta_half()
 
 void Sim::propagate_position_half()
 {
-	double dt;
+
 	int i,j;
 
 	for(i=0;i<nparticles;i++){
 		for(j=0;j<3;j++){
+			//cout<<particles[i].r[j]<<" "<<particles[i].v[j]<<" "<<dt<<endl;
 			particles[i].r[j] += 0.5*dt*particles[i].v[j];
+			//cout<<particles[i].r[j]<<" "<<particles[i].v[j]<<endl;
 
 		}
 	}
@@ -497,7 +502,7 @@ void Sim::langevin_xi()
 
 void Sim::propagate_position_half_scale(double *pscale)
 {
-	double dt;
+
 	int i,j;
 
 	for(i=0;i<nparticles;i++){
