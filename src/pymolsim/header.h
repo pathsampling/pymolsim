@@ -68,10 +68,19 @@ class Potential
 		vector<double> stress {0, 0, 0, 0, 0, 0, 0, 0, 0};	//instantaneous stress tensor
 		vector<double> fi{0., 0., 0.};
 		vector<double> fj{0., 0., 0.};
-		void forces(vector<double> );
-		void potential_energy(vector<double>);
-		void init();
+		virtual void forces(vector<double> ) = 0;
+		virtual void potential_energy(vector<double>) = 0;
+		virtual void init() = 0;
 };
+
+
+class LJ : public Potential {
+
+	public:
+		void forces(vector<double> ) override;
+		void potential_energy(vector<double>) override;
+		void init() override;		
+}
 
 
 class Particle
@@ -127,33 +136,11 @@ class Barostat
 };
 
 
-class Average
-{
-	public:
-		string name;
-
-		int64_t n,
-			in;
-
-		long double now,
-		            sum,
-		            sumsq;
-};
-
-
 class Sim
 {
 	public:
-		int64_t ncycle1,
-			ncycle2;
 		
-		int swcount,
-		    swplot,	//plot or not
-		    plotrate,	//rate of plotting
-		    outputrate;	//rate of writing output
-
 		int nparticles;	//number of particles
-		int readstruc;	//read in or create structure
 		double E0;	//initial energy
 
 
@@ -200,38 +187,11 @@ class Sim
 					// 1 = langevin thermostat
 
 
-		int64_t *rdf,		//array to sample rdf
-			rdfcount;		//counter for rdf
-
-		int rdfBIN,		//number of bins for the rdf
-		    rdfRES;		//resolution of rdf;  0 < r < rdfBIN/rdfRES 
-		
-		double rmax_rdf;	//maximum distance that can be sampled in rdf
-
-		FILE *fprdf;		//rdf file pointer
-
-		int64_t histo_v[4][MBIN_v],	//velocity distribution
-			vcount[4];
-		int64_t histo_Vol[MBIN_Vol],	//volume distribution
-			Volcount;
-		double histo_Vol0;		//initial volume
-
-		double histo_vacf[VACF_MAXT];		//histogram for VACF
-
-		int64_t vacfcount[VACF_MAXT];		//counter for normalisation
-
-		int vacf_indext0,			// index of the corresponding time origin
-		    vacf_time,				// 'time' for the vacf
-		    vacf_t0time[VACF_MAXT0],	//t0 for different time origins
-		    vacf_countt0;			//count no. of time origins
-
-
 		//holds individual properties
 		vector<Particle> particles;
 		Potential potential;
 		Thermostat thermostat;
 		Barostat barostat;
-		vector<Average> pAv;
 		
 		vector<Particle> gparticles();
 		void sparticles(vector<Particle> );
@@ -244,9 +204,6 @@ class Sim
 
 		Barostat gbarostat();
 		void sbarostat(Barostat);
-
-		vector<Average> gaverage();
-		void saverage(vector<Average>);
 
 		//pyscal integration to read in files
 		//will implement on the python side
@@ -283,6 +240,10 @@ class Sim
 		void propagate_position_half_scale(double *);
 		void rescale_position_momenta(double *);
 
+		//trajectory file
+		string trajfile;
+		void dump(int);
+
 
 
 };
@@ -291,28 +252,12 @@ class Sim
 
 //-------------------------------------------functions-------------------------------------------------------
 
-//DEPRECATED
-// in readinput.cpp
-//void readinput(Sim &, Potential &, Thermostat &, Barostat &, int &,int argc,char *argv[]);
-void readinput(Sim &, Potential &, Thermostat &, Barostat &, int &);
-void read_initstructure(Sim &,Particle *);
-void read_initlammpsdump(Sim &, Particle *);
-
 
 //THIS CAN REMAIN THE SAME - oustide use is not required
 //in ran3.cpp
 double ran3(int=1);
 double RandomVelocity(double,double);
 double gauss();
-
-
-//ALL THESE METHODS WOULD BE MOVED TO POTENTIAL/SYSTEM
-//in forces.cpp
-//specific
-void kinetic_stress(Particle *, Sim &);
-
-
-
 
 
 //-------------------------------------------Global variables------------------------------------------------

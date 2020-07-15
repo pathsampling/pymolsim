@@ -91,15 +91,9 @@ void Sim::sbarostat(Barostat sbar){
 	barostat = sbar;
 }
 
-vector<Average> Sim::gaverage(){
-	return pAv;
-}
-void Sim::saverage(vector<Average> svg){
-	pAv = svg;
-}
 //--------------------------initialise Lennard-Jones potential---------------------------------------------------------
 
-void Potential::init()
+void LJ::init()
 {
 
 	c1 = 0.016132*epsilon;

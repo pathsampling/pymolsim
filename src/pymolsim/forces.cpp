@@ -1,7 +1,7 @@
 #include "header.h"
 
 //--------------------------------------------calculate forces----------------------------------------------------
-void Potential::forces(vector<double> dr){
+void LJ::forces(vector<double> dr){
 	//assign the 
 	int i,j,k,m,n;
 	double r2,r6i;
@@ -86,7 +86,7 @@ void Potential::forces(vector<double> dr){
 	//TODO : scaling for virial is not yet done
 }
 
-void Potential::potential_energy(vector<double> dr)
+void LJ::potential_energy(vector<double> dr)
 {
 	int i,j;
 	double r2,r6i;

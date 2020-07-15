@@ -21,8 +21,6 @@ PYBIND11_MODULE(cmolsim, m) {
 	//---------------------------------------
 	py::class_<Sim>(m,"Sim")
 		.def(py::init< >())
-		.def_readwrite("ncycle1", &Sim::ncycle1)
-		.def_readwrite("ncycle2", &Sim::ncycle2)
 		.def_readwrite("nparticles", &Sim::nparticles)
 		.def_readwrite("E0", &Sim::E0)
 		.def_readwrite("rho", &Sim::rho)
@@ -59,8 +57,6 @@ PYBIND11_MODULE(cmolsim, m) {
 		.def_property("potential", &Sim::gpotential, &Sim::spotential)
 		.def_property("thermostat", &Sim::gthermostat, &Sim::sthermostat)
 		.def_property("barostat", &Sim::gbarostat, &Sim::sbarostat)
-		.def_property("average", &Sim::gaverage, &Sim::saverage)
-
 		//methods
 		.def("forces", &Sim::forces)
 		.def("potential_energy", &Sim::potential_energy)
@@ -148,13 +144,6 @@ PYBIND11_MODULE(cmolsim, m) {
 		.def("init", &Barostat::init)
 		;
 
-	py::class_<Average>(m, "Average")
-		.def(py::init< >())
-		.def_readwrite("name", &Average::name)
-		.def_readwrite("now", &Average::now)
-		.def_readwrite("sum", &Average::sum)
-		.def_readwrite("sumsq", &Average::sumsq)
-		;
 	//read input will be deprecated
 	//read init_structure and read_initlammpsdump
     //needs binding

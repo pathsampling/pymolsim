@@ -18,6 +18,7 @@ set(SYSSOURCES "${SOURCE_DIR}/analyse.cpp"
 			   "${SOURCE_DIR}/init.cpp"
 			   "${SOURCE_DIR}/md.cpp"
 			   "${SOURCE_DIR}/ran3.cpp"
+			   "${SOURCE_DIR}/output.cpp"
 			   )
 
 #Now add subdir for the modules
