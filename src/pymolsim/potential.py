@@ -29,24 +29,25 @@ class LJ:
 		Vectorized force call
 		input is an natomsxnatoms  arrays
 		"""
-		sigma6 = self.sigma**6
+		#We need to vectorize the function call - so we need to add some subfunctions
 		r2 = (xd**2 + yd**2 + zd**2)**0.5
 
-		if (r2 <= self.rmin2):
+		def _force_cut1(r2):
+			sigma6 = self.sigma**6
 			r6i = 1.0/(r2*r2*r2)
 			f = 24.0*self.epsilon*sigma6*r6i/r2* (2.0*sigma6*r6i - 1.0)
-		
-		elif (r2 < self.rmax2):
+			return f
+
+		def _force_cut2(r2):
+			sigma6 = self.sigma**6			
 			r6i = 1.0/(r2*r2*r2);
 			f = 2.0/r2 * (6.0*self.c2 * (sigma6*r6i)**2 + 3.0*self.c3*sigma6*r6i) - 2.0*self.c4/(self.sigma*self.sigma)
-					
-		else:
-			f = np.zeros_like(r2)
+			return f
 
-		#we have to remember a bit, since its a nxn matrix, f and g are also nxn
-		#we return f - virial and hypervirial discontinued for now
-		#stress too!
-		
+		f = np.zeros_like(r2)
+		f = np.where(r2 <= self.rmin2, _force_cut1(r2), f)
+		f = np.where(self.rmin2 < r2 < self.rmax2, _force_cut2(r2), f)
+
 		#convert forces to its components
 		fx = f*xd
 		fy = f*yd
@@ -59,20 +60,23 @@ class LJ:
 		"""
 		Calculate pe : vectorized
 		"""
-
-		sigma6 = sigma**6
 		r2 = (xd**2 + yd**2 + zd**2)**0.5
-				
-		if(r2 <= self.rmin2):
+
+		def _pe_cut1(r2):
+			sigma6 = sigma**6
 			r6i = 1.0/(r2*r2*r2)
 			energy = (4.0*self.epsilon*sigma6*r6i)*(sigma6*r6i - 1.0) + self.c1
-		
-		elif(r2 < self.rmax2):
+			return energy
+
+		def _pe_cut2(r2):
+			sigma6 = sigma**6				
 			r6i = 1.0/(r2*r2*r2)
 			energy = self.c2*(sigma6*r6i)**2 + self.c3*sigma6*r6i + self.c4*r2/(self.sigma*self.sigma) + self.c5
+			return energy
 		
-		else:
-			energy = np.zeros_like(r2)
+		energy = np.zeros_like(r2)
+		energy = np.where(r2 <= self.rmin2, _pe_cut1(r2), energy)
+		energy = np.where(self.rmin2 < r2 < self.rmax2, _pe_cut2(r2), energy)
 
 		return energy
 		

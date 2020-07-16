@@ -7,7 +7,10 @@ import os
 
 class Sim:
 	def __init__(self, atoms, boxdims):
-		
+
+		#NOW WE NEED TO MODIFY
+		self.nparticles = len(atoms)
+
 		self.boxdims = boxdims
 		self.box = np.array([boxdims[0][1]-boxdims[0][0], boxdims[1][1]-boxdims[1][0], boxdims[2][1]-boxdims[2][0]])
 		self.box_2 = np.array([(boxdims[0][1]-boxdims[0][0])/2, (boxdims[1][1]-boxdims[1][0])/2, (boxdims[2][1]-boxdims[2][0])/2])
@@ -42,8 +45,7 @@ class Sim:
 		self.thermostat = None
 		self.barostat = None
 
-		#NOW WE NEED TO MODIFY
-		self.nparticles = len(atoms)
+
 		#atoms are pyscal atom objects
 		pos = [atom.pos for atom in atoms]
 		self.x = np.array([p[0] for p in pos])
@@ -89,7 +91,7 @@ class Sim:
 		Generate random velocities
 		"""
 		temperature = 1.0/self.beta
-		vel = np.sqrt(temperature/mass)*np.random.normal(size=counts)
+		vel = np.sqrt(temperature/self.mass)*np.random.normal(size=counts)
 		return vel
 
 	def forces(self):
@@ -145,10 +147,6 @@ class Sim:
 
 
 	def start(self):
-		for particle in self.particles:
-			for i in range(3):
-				particle.v[i] = self.random_velocity(particle.mass)
-				self.p[i] += particle.v[i]*particle.mass
 		
 		self.vx = self.random_velocity(counts=self.nparticles)
 		self.vy = self.random_velocity(counts=self.nparticles)
@@ -199,27 +197,28 @@ class Sim:
 	
 
 	def langevin_thermo(self):
-		for particle in self.particles:
-			for i in range(3):
-				self.thermostat.dElangevin += 0.5*particle.mass*particle.v[i]**2;
-				particle.v[i] = self.thermostat.lc1*particle.v[i] + self.thermostat.lc2/np.sqrt(particle.mass)*np.random.normal()
-				self.thermostat.dElangevin -= 0.5*particle.mass*particle.v[i]**2
+		self.vx = self.thermostat.lc1*self.vx + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
+		self.vy = self.thermostat.lc1*self.vy + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
+		self.vz = self.thermostat.lc1*self.vz + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
 
 	def langevin_baro(self):
 		self.barostat.pv = self.barostat.lc1*self.barostat.pv + self.barostat.lc2*np.random.normal()
 
 	def propagate_momenta_half(self):
-		for particle in self.particles:
-			particle.v += 0.5*self.dt*particle.f/particle.mass
+		self.vx += 0.5*self.dt*self.fx/self.mass
+		self.vy += 0.5*self.dt*self.fy/self.mass
+		self.vz += 0.5*self.dt*self.fz/self.mass
 
 	def propagate_position_half(self):
-		for particle in self.particles:
-			particle.r += 0.5*self.dt*particle.v		
+		self.x += 0.5*self.dt*self.vx
+		self.y += 0.5*self.dt*self.vy
+		self.z += 0.5*self.dt*self.vz		
 	
 	def propagate_momenta_xi(self):
-		c = np.exp(-self.thermostat.nhlxi*self.dat/2)
-		for particle in self.particles:
-			particle.v = particle.v *c
+		c = np.exp(-self.thermostat.nhlxi*self.dt/2)
+		self.vx = self.vx*c
+		self.vy = self.vy*c
+		self.vz = self.vz*c
 
 	def langevin_xi(self):
 		self.thermostat.nhlxi = self.thermostat.nhlc1*self.thermostat.nhlxi + self.thermostat.nhlc2*np.random.normal()
