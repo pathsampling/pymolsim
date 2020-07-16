@@ -6,9 +6,8 @@ import numpy as np
 import os
 
 class Sim:
-	def __init__(self, particles, boxdims):
+	def __init__(self, atoms, boxdims):
 		
-		self.nparticles = len(particles)
 		self.boxdims = boxdims
 		self.box = np.array([boxdims[0][1]-boxdims[0][0], boxdims[1][1]-boxdims[1][0], boxdims[2][1]-boxdims[2][0]])
 		self.box_2 = np.array([(boxdims[0][1]-boxdims[0][0])/2, (boxdims[1][1]-boxdims[1][0])/2, (boxdims[2][1]-boxdims[2][0])/2])
@@ -16,7 +15,6 @@ class Sim:
 		self.volume = self.box[0]*self.box[1]*self.box[2]
 		self.rho = self.nparticles/self.volume
 		self.trajfile = os.path.join(os.getcwd(), "traj.dat")
-		self.particles = particles
 
 		self.E0 = 0
 		self.beta = None
@@ -40,8 +38,48 @@ class Sim:
 		self.potential = None
 		self.thermostat = None
 		self.barostat = None
-		self.nthreads = 1
-		
+
+		#NOW WE NEED TO MODIFY
+		self.nparticles = len(atoms)
+		#atoms are pyscal atom objects
+		pos = [atom.pos for atom in atoms]
+		self.x = np.array([p[0] for p in pos])
+		self.y = np.array([p[1] for p in pos])
+		self.z = np.array([p[2] for p in pos])
+		self.xd = None
+		self.yd = None
+		self.zd = None
+		self.vx = np.zeros(len(atoms))
+		self.vy = np.zeros(len(atoms))
+		self.vz = np.zeros(len(atoms))
+		self.f = np.zeros((len(atoms), len(atoms)))
+		self.mass = np.ones(len(atoms))
+
+	def image_distance(self):
+
+		self.xd = np.where(self.xd > self.box_2[0], self.xd, self.xd-self.box[0])
+		self.xd = np.where(self.xd < -self.box_2[0], self.xd, self.xd+self.box[0])
+		self.yd = np.where(self.yd > self.box_2[1], self.yd, self.yd-self.box[1])
+		self.yd = np.where(self.yd < -self.box_2[1], self.yd, self.yd+self.box[1])
+		self.zd = np.where(self.zd > self.box_2[2], self.zd, self.zd-self.box[2])
+		self.zd = np.where(self.zd < -self.box_2[2], self.zd, self.zd+self.box[2])
+
+	def remap(self):
+		self.x = np.where(self.x > self.box[0], self.x, self.x-self.box[0])
+		self.x = np.where(self.x < 0.0, self.x, self.x+self.box[0])
+		self.y = np.where(self.y > self.box[1], self.y, self.y-self.box[1])
+		self.y = np.where(self.y < 0.0, self.y, self.y+self.box[1])
+		self.z = np.where(self.z > self.box[2], self.z, self.z-self.box[2])
+		self.z = np.where(self.z < 0.0, self.z, self.z+self.box[2])
+
+	def vectorize_dist(self):		
+		"""
+		The vectorise method, also need to check pbc
+		"""
+		self.xd = np.meshgrid(self.x, self.x)[1] - np.meshgrid(self.x, self.x)[0]
+		self.yd = np.meshgrid(self.y, self.y)[1] - np.meshgrid(self.y, self.y)[0]
+		self.zd = np.meshgrid(self.z, self.z)[1] - np.meshgrid(self.z, self.z)[0]
+		self.image_distance()		
 	
 	def random_velocity(self, mass):
 		"""
@@ -55,47 +93,31 @@ class Sim:
 		"""
 		Clauclate forces of the system
 		"""
-		for particle in self.particles:
-			particle.f = np.zeros(3)
+		#first step to vectorize dist
+		self.vectorize_dist()
 
-		#now this is the main loop - daskify later
-		calcs = []
-		for i in range(self.nparticles - 1):
-			for j in range(i+1, self.nparticles):
-				self.call_force(i, j)
+		#now calculate forces
+		fx, fy, fz = self.potential.forces(self.xd, self.yd, self.zd)
 
-		self.stress += self.potential.stress/self.volume
-		self.virial = self.potential.virial/(3*self.volume)
-		self.hypervirial = self.potential.hypervirial/9
-
-				
-		
-	def call_force(self, i, j):
-		"""
-		Sub force call
-		"""
-		dr = self.image_distance(i, j)
-		fi, fj = self.potential.forces(dr)
-		#These are vector operations
-		self.particles[i].f += fi
-		self.particles[j].f += fj
+		#finally we should reduce the forces
+		self.fx = np.sum(fx, axis=-1)
+		self.fy = np.sum(fy, axis=-1)
+		self.fz = np.sum(fz, axis=-1)
 
 	def potential_energy(self):
-		pe = 0
-		for i in range(self.nparticles - 1):
-			for j in range(i+1, self.nparticles):
-				pe += self.call_potential_energy(i, j)
 
-
-	def call_potential_energy(self, i, j):
-		dr = self.image_distance(i, j)
-		return self.potential.potential_energy(dr)
+		energy = self.potential.potential_energy(self.xd, self.yd, self.zd)
+		pe = np.sum(energy)/2
+		#we need to divide by 2 to remove the overcounting
+		return pe
 
 
 	def kinetic_energy(self):
+		
 		ke = 0
-		for particle in self.particles:
-			ke += particle.mass*np.sum(particle.v**2)
+		ke += self.mass*np.sum(self.vx**2)
+		ke += self.mass*np.sum(self.vy**2)
+		ke += self.mass*np.sum(self.vz**2)
 		return ke
 
 	def total_energy(self):
@@ -105,8 +127,9 @@ class Sim:
 
 	def total_momentum(self):
 		self.p = np.zeros(3)
-		for particle in self.particles:
-			self.p += particle.v*particle.mass
+		self.p[0] = np.sum(self.mass*self.vx)
+		self.p[1] = np.sum(self.mass*self.vy)
+		self.p[2] = np.sum(self.mass*self.vz)
 
 	def rescale_velocities(self):
 		ke = self.kinetic_energy()
@@ -114,25 +137,10 @@ class Sim:
 		temp_aim = 1.0/self.beta
 		c = np.sqrt(temp_aim/temp)
 
-		for particle in self.particles:
-			particle.v *= c
+		self.vx = self.vx*c
+		self.vy = self.vy*c
+		self.vz = self.vz*c
 
-	def image_distance(self, i, j):
-		dr = self.particles[i].r - self.particles[j].r
-		for i in range(3):
-			if (dr[i] > self.box_2[i]):
-				dr[i] -= self.box[i]
-			elif (dr[i] < -self.box_2[i]):
-				dr[i] += self.box[i]
-		return dr
-
-	def remap(self):
-		for particle in self.particles:
-			for i in range(3):
-				if (particle.r[i] > self.box[i]):
-					particle.r[i] -= self.box[i]
-				if (particle.r[i] < 0.0):
-					particle.r[i] += self.box[i]
 
 	def start(self):
 		for particle in self.particles:
