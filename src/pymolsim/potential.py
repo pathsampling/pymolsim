@@ -7,11 +7,6 @@ import numpy as np
 
 class LJ:
 	def __init__(self, epsilon, sigma):
-		self.virial = 0
-		self.hypervirial = 0
-		self.press_kin = None
-		self.energy = 0
-		self.stress = np.zeros((3, 3))
 
 		self.epsilon = epsilon
 		self.sigma = sigma

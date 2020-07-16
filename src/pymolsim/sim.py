@@ -1,16 +1,14 @@
-# Pure python MD code
-# Based on Jutta's code
-# Could be pretty slow :)
-# Use only for test systems
+"""
+Main sim class with contains md methods
+"""
 import numpy as np
 import os
 
 class Sim:
 	def __init__(self, atoms, boxdims):
 
-		#NOW WE NEED TO MODIFY
-		self.nparticles = len(atoms)
 
+		self.nparticles = len(atoms)
 		self.boxdims = boxdims
 		self.box = np.array([boxdims[0][1]-boxdims[0][0], boxdims[1][1]-boxdims[1][0], boxdims[2][1]-boxdims[2][0]])
 		self.box_2 = np.array([(boxdims[0][1]-boxdims[0][0])/2, (boxdims[1][1]-boxdims[1][0])/2, (boxdims[2][1]-boxdims[2][0])/2])
@@ -19,7 +17,6 @@ class Sim:
 		self.rho = self.nparticles/self.volume
 		self.trajfile = os.path.join(os.getcwd(), "traj.dat")
 
-		self.E0 = 0
 		self.beta = None
 		self.pressure = None
 		self.dt = 0.0025
@@ -31,20 +28,10 @@ class Sim:
 		self.py = 0
 		self.pz = 0
 		
-
-		self.Tinst = 0
-		self.Pinst = 0
-		self.Pinst_1 = 0
-		self.virial = 0
-		self.hypervirial = 0
-		self.press_kin = 0
-		self.stress = np.zeros((3, 3))
-
 		self.integrator = 0
 		self.potential = None
 		self.thermostat = None
 		self.barostat = None
-
 
 		#atoms are pyscal atom objects
 		pos = [atom.pos for atom in atoms]
@@ -162,6 +149,15 @@ class Sim:
 		self.vy -= self.py/self.nparticles/self.mass
 		self.vz -= self.pz/self.nparticles/self.mass
 
+		#assign thermostats
+		if self.thermostat is None:
+			self.run = self.md_verlet
+		elif self.thermostat.name == "rescale":
+			self.run = self.md_rescale
+		elif self.thermostat.name == "ansersen":
+			self.run = self.md_andersen
+		elif self.thermostat.name == "langevin":
+			self.run = self.md_langevin
 		
 		#pe = self.potential_energy()
 	def md_verlet(self):
@@ -170,41 +166,33 @@ class Sim:
 		self.propagate_position_half()
 		self.forces()
 		self.propagate_momenta_half()
+		self.remap()
+
+	def md_rescale(self):
+		self.propagate_momenta_half()
+		self.propagate_position_half()
+		self.propagate_position_half()
+		self.forces()
+		self.propagate_momenta_half()
+		self.remap()
+		self.rescale_velocities()
 
 	def md_langevin(self):
 		self.langevin_thermo()
 		self.md_verlet()
 		self.langevin_thermo()
+		self.remap()
 
 	def md_andersen(self):
 		self.md_verlet()
 		rands = np.random.rand(self.nparticles)
 		np.where(rands < self.thermostat.anu*self.dt, np.sqrt(1.0/(self.mass*self.beta))*np.random.normal(), self.vx)
-
-	
-	def md_nosehooverlangevin_NVT(self):
-		Nf = 3*self.nparticles - 3
-		self.thermostat.nhlxi = self.thermostat.nhlc1*self.thermostat.nhlxi + self.thermostat.nhlc2*np.random.normal();
-		self.propagate_momenta_xi()
-		self.propagate_momenta_half()
-		self.propagate_position_half()
-
-		ke = self.kinetic_energy()
-		self.thermostat.nhlxi = self.thermostat.nhlxi + self.dt*(2.0*ke - (Nf/self.beta))/self.thermostat.nhlmu
-		self.propagate_position_half()
-		self.forces()
-		self.propagate_momenta_half()
-		self.propagate_momenta_xi()
-		self.thermostat.nhlxi = self.thermostat.nhlc1*self.thermostat.nhlxi + self.thermostat.nhlc2*np.random.normal()
-	
+		self.remap()
 
 	def langevin_thermo(self):
 		self.vx = self.thermostat.lc1*self.vx + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
 		self.vy = self.thermostat.lc1*self.vy + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
 		self.vz = self.thermostat.lc1*self.vz + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
-
-	def langevin_baro(self):
-		self.barostat.pv = self.barostat.lc1*self.barostat.pv + self.barostat.lc2*np.random.normal()
 
 	def propagate_momenta_half(self):
 		self.vx += 0.5*self.dt*self.fx/self.mass
@@ -216,17 +204,6 @@ class Sim:
 		self.y += 0.5*self.dt*self.vy
 		self.z += 0.5*self.dt*self.vz		
 	
-	def propagate_momenta_xi(self):
-		c = np.exp(-self.thermostat.nhlxi*self.dt/2)
-		self.vx = self.vx*c
-		self.vy = self.vy*c
-		self.vz = self.vz*c
-
-	def langevin_xi(self):
-		self.thermostat.nhlxi = self.thermostat.nhlc1*self.thermostat.nhlxi + self.thermostat.nhlc2*np.random.normal()
-	
-	#def propagate_position_half_scale(self):
-	#def rescale_position_momenta(self):
 	
 	def dump(self, step):
 		"""
