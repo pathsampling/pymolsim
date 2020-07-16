@@ -119,11 +119,7 @@ class Sim:
 
 
 	def kinetic_energy(self):
-		
-		ke = 0
-		ke += self.mass*np.sum(self.vx**2)
-		ke += self.mass*np.sum(self.vy**2)
-		ke += self.mass*np.sum(self.vz**2)
+		ke = np.sum(self.mass*(self.vx**2 + self.vy**2 + self.vz**2))
 		return ke
 
 	def total_energy(self):
@@ -145,6 +141,11 @@ class Sim:
 		self.vx = self.vx*c
 		self.vy = self.vy*c
 		self.vz = self.vz*c
+
+	@property
+	def temperature(self):
+		temp = 2.0*self.kinetic_energy()/(3*self.nparticles - 3.0)
+		return temp
 
 
 	def start(self):
