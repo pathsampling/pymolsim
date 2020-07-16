@@ -156,9 +156,9 @@ class Sim:
 		self.total_momentum()
 		ke = self.kinetic_energy()
 
-		self.vx = self.px/self.nparticles/self.mass
-		self.vy = self.py/self.nparticles/self.mass
-		self.vz = self.pz/self.nparticles/self.mass
+		self.vx -= self.px/self.nparticles/self.mass
+		self.vy -= self.py/self.nparticles/self.mass
+		self.vz -= self.pz/self.nparticles/self.mass
 
 		
 		#pe = self.potential_energy()
