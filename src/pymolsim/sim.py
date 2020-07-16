@@ -4,7 +4,6 @@
 # Use only for test systems
 import numpy as np
 import os
-from dask import  delayed, compute
 
 class Sim:
 	def __init__(self, particles, boxdims):
@@ -63,13 +62,7 @@ class Sim:
 		calcs = []
 		for i in range(self.nparticles - 1):
 			for j in range(i+1, self.nparticles):
-				calcs.append(delayed (self.call_force)(i, j))
-		
-		res = compute(*calcs)	
-
-		for val in res:
-			self.particles[val[0]].f += val[2]
-			self.particles[val[1]].f += val[3]
+				self.call_force(i, j)
 
 		self.stress += self.potential.stress/self.volume
 		self.virial = self.potential.virial/(3*self.volume)
@@ -84,8 +77,8 @@ class Sim:
 		dr = self.image_distance(i, j)
 		fi, fj = self.potential.forces(dr)
 		#These are vector operations
-		return i, j, fi, fj
-
+		self.particles[i].f += fi
+		self.particles[j].f += fj
 
 	def potential_energy(self):
 		pe = 0
