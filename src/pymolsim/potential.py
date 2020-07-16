@@ -76,7 +76,7 @@ class LJ:
 		
 		energy = np.zeros_like(r2)
 		energy = np.where(r2 <= self.rmin2, _pe_cut1(r2), energy)
-		energy = np.where(self.rmin2 < r2 < self.rmax2, _pe_cut2(r2), energy)
+		energy = np.where((r2 > self.rmin2) & (r2 < self.rmax2), _pe_cut2(r2), energy)
 
 		return energy
 		
