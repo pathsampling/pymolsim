@@ -60,7 +60,7 @@ class LJ:
 
 		for m in range(3):
 			for n in range(3):
-				stress[m, n] += f*dr[m]*dr[n]
+				self.stress[m, n] += f*dr[m]*dr[n]
 
 		for k in range(3):
 			fi[k] -= f*dr[k]
@@ -87,7 +87,7 @@ class LJ:
 			r6i = 1.0/(r2*r2*r2)
 			energy += self.c2*(sigma6*r6i)**2 + self.c3*sigma6*r6i + self.c4*r2/(self.sigma*self.sigma) + self.c5
 		
-		else
+		else:
 			energy += 0.0
 
 		return energy

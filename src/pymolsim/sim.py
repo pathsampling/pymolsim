@@ -4,7 +4,7 @@
 # Use only for test systems
 import numpy as np
 import os
-
+from dask import  delayed, compute
 
 class Sim:
 	def __init__(self, particles, boxdims):
@@ -41,6 +41,7 @@ class Sim:
 		self.potential = None
 		self.thermostat = None
 		self.barostat = None
+		self.nthreads = 1
 		
 	
 	def random_velocity(self, mass):
@@ -59,9 +60,16 @@ class Sim:
 			particle.f = np.zeros(3)
 
 		#now this is the main loop - daskify later
+		calcs = []
 		for i in range(self.nparticles - 1):
 			for j in range(i+1, self.nparticles):
-				self.call_force(i, j)
+				calcs.append(delayed (self.call_force)(i, j))
+		
+		res = compute(*calcs)	
+
+		for val in res:
+			self.particles[val[0]].f += val[2]
+			self.particles[val[1]].f += val[3]
 
 		self.stress += self.potential.stress/self.volume
 		self.virial = self.potential.virial/(3*self.volume)
@@ -76,8 +84,7 @@ class Sim:
 		dr = self.image_distance(i, j)
 		fi, fj = self.potential.forces(dr)
 		#These are vector operations
-		self.particles[i].f += fi
-		self.particles[j].f += fj
+		return i, j, fi, fj
 
 
 	def potential_energy(self):
@@ -216,21 +223,21 @@ class Sim:
 	def dump(self, step):
 		
 		if (step == 0):
-			fout = open(trajfile, "w")
+			fout = open(self.trajfile, "w")
 		else:
-			fout = open(trajfile, "a")	
+			fout = open(self.trajfile, "a")	
 		
 		fout.write("ITEM: TIMESTEP\n")
 		fout.write("%d\n"%step)
 		fout.write("ITEM: NUMBER OF ATOMS\n")
-		fout.write("%d\n"%nparticles)
+		fout.write("%d\n"%self.nparticles)
 		fout.write("ITEM: BOX BOUNDS pp pp pp\n")
-		fout.write("0 %f"%box[0])
-		fout.write("0 %f"%box[1])
-		fout.write("0 %f"%box[2])
+		fout.write("0 %f\n"%self.box[0])
+		fout.write("0 %f\n"%self.box[1])
+		fout.write("0 %f\n"%self.box[2])
 		fout.write("ITEM: ATOMS id type mass x y z vx vy vz\n")
 
-		for i, particles in enumerate(self.particles):
+		for i, particle in enumerate(self.particles):
 			fout.write("%d %d %d "%(i+1, particle.type, particle.mass))
 			for j in range(3):
 				fout.write("%f "%particle.r[j])
