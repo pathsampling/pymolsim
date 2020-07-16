@@ -59,6 +59,7 @@ class Sim:
 		self.vz = np.zeros(len(atoms))
 		self.f = np.zeros((len(atoms), len(atoms)))
 		self.mass = np.ones(len(atoms))
+		self.type = np.ones(len(atoms))
 
 	def image_distance(self):
 
@@ -227,6 +228,9 @@ class Sim:
 	#def rescale_position_momenta(self):
 	
 	def dump(self, step):
+		"""
+		Cant vectorize this :)
+		"""
 		
 		if (step == 0):
 			fout = open(self.trajfile, "w")
@@ -243,12 +247,10 @@ class Sim:
 		fout.write("0 %f\n"%self.box[2])
 		fout.write("ITEM: ATOMS id type mass x y z vx vy vz\n")
 
-		for i, particle in enumerate(self.particles):
-			fout.write("%d %d %d "%(i+1, particle.type, particle.mass))
-			for j in range(3):
-				fout.write("%f "%particle.r[j])
-			for j in range(3):
-				fout.write("%f "%particle.v[j])
+		for i, particle in enumerate(self.x):
+			fout.write("%d %d %d "%(i+1, self.type[i], self.mass[i]))
+			fout.write("%f %f %f "%(self.x[i], self.y[i], self.z[i]))
+			fout.write("%f %f %f"%(self.vx[i], self.vy[i], self.vz[i]))
 			fout.write("\n")
 		
 		fout.close()			
