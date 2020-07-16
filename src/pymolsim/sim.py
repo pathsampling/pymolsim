@@ -24,7 +24,10 @@ class Sim:
 		self.tot_energy = 0
 		self.pe = 0
 		self.ke = 0
-		self.p = np.zeros(3)
+		self.px = 0
+		self.py = 0
+		self.pz = 0
+		
 
 		self.Tinst = 0
 		self.Pinst = 0
@@ -57,20 +60,20 @@ class Sim:
 
 	def image_distance(self):
 
-		self.xd = np.where(self.xd > self.box_2[0], self.xd, self.xd-self.box[0])
-		self.xd = np.where(self.xd < -self.box_2[0], self.xd, self.xd+self.box[0])
-		self.yd = np.where(self.yd > self.box_2[1], self.yd, self.yd-self.box[1])
-		self.yd = np.where(self.yd < -self.box_2[1], self.yd, self.yd+self.box[1])
-		self.zd = np.where(self.zd > self.box_2[2], self.zd, self.zd-self.box[2])
-		self.zd = np.where(self.zd < -self.box_2[2], self.zd, self.zd+self.box[2])
+		self.xd = np.where(self.xd > self.box_2[0], self.xd-self.box[0], self.xd)
+		self.xd = np.where(self.xd < -self.box_2[0], self.xd+self.box[0], self.xd)
+		self.yd = np.where(self.yd > self.box_2[1], self.yd-self.box[1], self.yd)
+		self.yd = np.where(self.yd < -self.box_2[1], self.yd+self.box[1], self.yd)
+		self.zd = np.where(self.zd > self.box_2[2], self.zd-self.box[2], self.zd)
+		self.zd = np.where(self.zd < -self.box_2[2], self.zd+self.box[2], self.zd)
 
 	def remap(self):
-		self.x = np.where(self.x > self.box[0], self.x, self.x-self.box[0])
-		self.x = np.where(self.x < 0.0, self.x, self.x+self.box[0])
-		self.y = np.where(self.y > self.box[1], self.y, self.y-self.box[1])
-		self.y = np.where(self.y < 0.0, self.y, self.y+self.box[1])
-		self.z = np.where(self.z > self.box[2], self.z, self.z-self.box[2])
-		self.z = np.where(self.z < 0.0, self.z, self.z+self.box[2])
+		self.x = np.where(self.x > self.box[0], self.x-self.box[0], self.x)
+		self.x = np.where(self.x < 0.0, self.x+self.box[0], self.x)
+		self.y = np.where(self.y > self.box[1], self.y-self.box[1], self.y)
+		self.y = np.where(self.y < 0.0, self.y+self.box[1], self.y)
+		self.z = np.where(self.z > self.box[2], self.z-self.box[2], self.z)
+		self.z = np.where(self.z < 0.0, self.z+self.box[2], self.z)
 
 	def vectorize_dist(self):		
 		"""
@@ -81,12 +84,12 @@ class Sim:
 		self.zd = np.meshgrid(self.z, self.z)[1] - np.meshgrid(self.z, self.z)[0]
 		self.image_distance()		
 	
-	def random_velocity(self, mass):
+	def random_velocity(self, counts):
 		"""
 		Generate random velocities
 		"""
 		temperature = 1.0/self.beta
-		vel = np.sqrt(temperature/mass)*np.random.normal()
+		vel = np.sqrt(temperature/mass)*np.random.normal(size=counts)
 		return vel
 
 	def forces(self):
@@ -126,10 +129,9 @@ class Sim:
 		return pe+ke
 
 	def total_momentum(self):
-		self.p = np.zeros(3)
-		self.p[0] = np.sum(self.mass*self.vx)
-		self.p[1] = np.sum(self.mass*self.vy)
-		self.p[2] = np.sum(self.mass*self.vz)
+		self.px = np.sum(self.mass*self.vx)
+		self.py = np.sum(self.mass*self.vy)
+		self.pz = np.sum(self.mass*self.vz)
 
 	def rescale_velocities(self):
 		ke = self.kinetic_energy()
@@ -147,13 +149,18 @@ class Sim:
 			for i in range(3):
 				particle.v[i] = self.random_velocity(particle.mass)
 				self.p[i] += particle.v[i]*particle.mass
+		
+		self.vx = self.random_velocity(counts=self.nparticles)
+		self.vy = self.random_velocity(counts=self.nparticles)
+		self.vz = self.random_velocity(counts=self.nparticles)
 
+		#find momenta
+		self.total_momentum()
 		ke = self.kinetic_energy()
 
-		self.p /= self.nparticles
-
-		for particle in self.particles:
-			particle.v = self.p/particle.mass
+		self.vx = self.px/self.nparticles/self.mass
+		self.vy = self.py/self.nparticles/self.mass
+		self.vz = self.pz/self.nparticles/self.mass
 
 		
 		#pe = self.potential_energy()
@@ -171,10 +178,9 @@ class Sim:
 
 	def md_andersen(self):
 		self.md_verlet()
-		for particle in self.particles:
-			if np.random.rand() < self.thermostat.anu*self.dt:
-				for i in range(3):
-					particle.v[i] = np.sqrt(1.0/(particle.mass*self.beta))*np.random.normal()
+		rands = np.random.rand(self.nparticles)
+		np.where(rands < self.thermostat.anu*self.dt, np.sqrt(1.0/(particle.mass*self.beta))*np.random.normal(), self.vx)
+
 	
 	def md_nosehooverlangevin_NVT(self):
 		Nf = 3*self.nparticles - 3
