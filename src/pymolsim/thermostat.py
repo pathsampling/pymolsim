@@ -20,16 +20,13 @@ class Thermostat:
 
 	def start(self, dt, beta, integrator):
 
-		self.lc1 = exp(-self.lgamma*dt/2.0)
-		self.lc2 = sqrt((1.0-(self.lc1**2))/beta)
+		self.lc1 = np.exp(-self.lgamma*dt/2.0)
+		self.lc2 = np.sqrt((1.0-(self.lc1**2))/beta)
 
-		if integrator == 3:
-			self.nhlgamma = 0.0
+		#self.nhlc1 = exp(-self.nhlgamma*dt/2.0);
+		#self.nhlc2 = sqrt((1.0-(self.nhlc1**2))*2.0/beta/self.nhlmu);        
 
-		self.nhlc1 = exp(-self.nhlgamma*dt/2.0);
-		self.nhlc2 = sqrt((1.0-(self.nhlc1**2))*2.0/beta/self.nhlmu);        
-
-		self.nhlxi = random_velocity(beta,self.nhlmu)
+		#self.nhlxi = random_velocity(beta,self.nhlmu)
 
 	def random_velocity(self, beta, mass):
 		"""

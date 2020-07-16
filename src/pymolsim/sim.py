@@ -179,7 +179,7 @@ class Sim:
 	def md_andersen(self):
 		self.md_verlet()
 		rands = np.random.rand(self.nparticles)
-		np.where(rands < self.thermostat.anu*self.dt, np.sqrt(1.0/(particle.mass*self.beta))*np.random.normal(), self.vx)
+		np.where(rands < self.thermostat.anu*self.dt, np.sqrt(1.0/(self.mass*self.beta))*np.random.normal(), self.vx)
 
 	
 	def md_nosehooverlangevin_NVT(self):
