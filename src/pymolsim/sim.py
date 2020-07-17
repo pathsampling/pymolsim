@@ -107,7 +107,7 @@ class Sim:
 
 	def kinetic_energy(self):
 		ke = np.sum(self.mass*(self.vx**2 + self.vy**2 + self.vz**2))
-		return ke
+		return ke/2
 
 	def total_energy(self):
 		pe = self.potential_energy()
@@ -152,12 +152,16 @@ class Sim:
 		#assign thermostats
 		if self.thermostat is None:
 			self.run = self.md_verlet
+			print("running MD Verlet")
 		elif self.thermostat.name == "rescale":
 			self.run = self.md_rescale
-		elif self.thermostat.name == "ansersen":
+			print("running with temp rescaling")
+		elif self.thermostat.name == "andersen":
 			self.run = self.md_andersen
+			print("running with Andersen thermostat")
 		elif self.thermostat.name == "langevin":
 			self.run = self.md_langevin
+			print("running with Langevin thermostat")
 		
 		#pe = self.potential_energy()
 	def md_verlet(self):
@@ -169,25 +173,27 @@ class Sim:
 		self.remap()
 
 	def md_rescale(self):
-		self.propagate_momenta_half()
-		self.propagate_position_half()
-		self.propagate_position_half()
-		self.forces()
-		self.propagate_momenta_half()
-		self.remap()
+		self.md_verlet()
 		self.rescale_velocities()
 
 	def md_langevin(self):
 		self.langevin_thermo()
 		self.md_verlet()
 		self.langevin_thermo()
-		self.remap()
+		#self.remap()
 
 	def md_andersen(self):
 		self.md_verlet()
 		rands = np.random.rand(self.nparticles)
-		np.where(rands < self.thermostat.anu*self.dt, np.sqrt(1.0/(self.mass*self.beta))*np.random.normal(), self.vx)
-		self.remap()
+		
+		pvx = np.sqrt(1.0/(self.mass*self.beta))*np.random.normal()
+		pvy = np.sqrt(1.0/(self.mass*self.beta))*np.random.normal()
+		pvz = np.sqrt(1.0/(self.mass*self.beta))*np.random.normal()
+		
+		self.vx = np.where(rands < self.thermostat.anu*self.dt, pvx, self.vx)
+		self.vy = np.where(rands < self.thermostat.anu*self.dt, pvy, self.vy)
+		self.vz = np.where(rands < self.thermostat.anu*self.dt, pvz, self.vz)
+		#self.remap()
 
 	def langevin_thermo(self):
 		self.vx = self.thermostat.lc1*self.vx + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
