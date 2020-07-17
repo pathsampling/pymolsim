@@ -54,8 +54,9 @@ class WCA:
 		r1 = t2dist**0.5
 		t2f = (4*self.h/self.w**2)*(r1 - r0 - self.w)*(1 - ((r1 - r0 - self.w)/self.w)**2)
 		#add the forces
+		# REMEMBER IN OUR VECTORIZED ALGO, WE ALWAYS ADD THE FORCES
 		for i in range(dim):
-				fx[i][t2atoms[0], t2atoms[1]] += t2f*xd[i][t2atoms[0], t2atoms[1]]/t2dist
+				fx[i][t2atoms[0], t2atoms[1]] -= t2f*xd[i][t2atoms[0], t2atoms[1]]/t2dist
 				fx[i][t2atoms[1], t2atoms[0]] -= t2f*xd[i][t2atoms[1], t2atoms[0]]/t2dist
 		
 		return np.array(fx)
@@ -70,8 +71,8 @@ class WCA:
 			r2 += (xd[i]**2)
 
 		def _pe_cut1(r2):
-			sigma6 = sigma**6
-			r6i = 1.0/(r2*r2*r2)
+			sigma6 = self.sigma**6
+			r6i = np.where(np.abs(r2)>0, 1/(r2*r2*r2), r2)
 			energy = (4.0*self.epsilon*sigma6*r6i)*(sigma6*r6i - 1.0) + self.epsilon
 			return energy
 		

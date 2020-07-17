@@ -60,13 +60,13 @@ class LJ:
 
 		def _pe_cut1(r2):
 			sigma6 = sigma**6
-			r6i = 1.0/(r2*r2*r2)
+			r6i = np.where(np.abs(r2)>0, 1/(r2*r2*r2), r2)
 			energy = (4.0*self.epsilon*sigma6*r6i)*(sigma6*r6i - 1.0) + self.c1
 			return energy
 
 		def _pe_cut2(r2):
 			sigma6 = sigma**6				
-			r6i = 1.0/(r2*r2*r2)
+			r6i = np.where(np.abs(r2)>0, 1/(r2*r2*r2), r2)
 			energy = self.c2*(sigma6*r6i)**2 + self.c3*sigma6*r6i + self.c4*r2/(self.sigma*self.sigma) + self.c5
 			return energy
 		
