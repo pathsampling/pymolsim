@@ -114,7 +114,7 @@ class Sim:
 
 	def kinetic_energy(self):
 		ke = np.sum(self.mass*(self.v[0]**2 + self.v[1]**2 + self.v[2]**2))
-		return ke
+		return ke/2
 
 	def total_energy(self):
 		pe = self.potential_energy()
@@ -193,7 +193,7 @@ class Sim:
 		rands = np.random.rand(self.nparticles)
 		for i in range(self.dim):
 			self.v[i] = np.where(rands < self.thermostat.anu*self.dt, np.sqrt(1.0/(self.mass*self.beta))*np.random.normal(), self.v[i])
-			print("worked")
+			#print("worked")
 		self.remap()
 
 	def langevin_thermo(self):
