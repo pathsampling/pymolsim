@@ -51,11 +51,12 @@ class WCA:
 		t2dist = r2[t2atoms[0], t2atoms[1]]
 		#great, now calculate the force between the two atoms
 		r0 = self.rcutsq**0.5
-		t2f = (4*self.h/self.w**2)*(t2dist - r0 - self.w)*(1 - ((t2dist - r0 - self.w)/self.w)**2)
+		r1 = t2dist**0.5
+		t2f = (4*self.h/self.w**2)*(r1 - r0 - self.w)*(1 - ((r1 - r0 - self.w)/self.w)**2)
 		#add the forces
 		for i in range(dim):
-			fx[i][t2atoms[0], t2atoms[1]] += t2f*xd[i][t2atoms[0], t2atoms[1]]
-			fx[i][t2atoms[1], t2atoms[0]] -= t2f*xd[i][t2atoms[1], t2atoms[0]]
+				fx[i][t2atoms[0], t2atoms[1]] += t2f*xd[i][t2atoms[0], t2atoms[1]]/t2dist
+				fx[i][t2atoms[1], t2atoms[0]] -= t2f*xd[i][t2atoms[1], t2atoms[0]]/t2dist
 		
 		return np.array(fx)
 		
@@ -83,7 +84,8 @@ class WCA:
 		t2dist = r2[t2atoms[0], t2atoms[1]]
 		#great, now calculate the force between the two atoms
 		r0 = self.rcutsq**0.5
-		t2e =  self.h*(1- ((t2dist - r0 - self.w)/self.w)**2)**2
+		r1 = t2dist**0.5		
+		t2e =  self.h*(1- ((r1 - r0 - self.w)/self.w)**2)**2
 		#add the forces
 		energy[t2atoms[0], t2atoms[1]] += t2e
 		energy[t2atoms[1], t2atoms[0]] += t2e
