@@ -236,7 +236,7 @@ class Sim:
 		fout.write("0 %f\n"%self.box[2])
 		fout.write("ITEM: ATOMS id type mass x y z vx vy vz\n")
 
-		for i, particle in enumerate(self.x):
+		for i, particle in enumerate(self.x[0]):
 			fout.write("%d %d %d "%(i+1, self.type[i], self.mass[i]))
 			fout.write("%f %f %f "%(self.x[0][i], self.x[1][i], self.x[2][i]))
 			fout.write("%f %f %f"%(self.v[0][i], self.v[1][i], self.v[2][i]))
