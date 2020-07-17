@@ -19,13 +19,15 @@ class LJ:
 		self.rmin2 = (2.3*sigma)**2
 		self.rmax2 = (2.5*sigma)**2
 
-	def forces(self, xd, yd, zd):
+	def forces(self, xd, dim=3):
 		"""
 		Vectorized force call
 		input is an natomsxnatoms  arrays
 		"""
 		#We need to vectorize the function call - so we need to add some subfunctions
-		r2 = (xd**2 + yd**2 + zd**2)
+		r2 = xd[0]**2
+		for i in range(1, dim):
+			r2 += (xd[i]**2)
 		r6i = np.where(np.abs(r2)>0, 1/(r2*r2*r2), r2)
 
 		def _force_cut1(r2):
@@ -46,18 +48,20 @@ class LJ:
 		f = fcut1 + fcut2
 
 		#convert forces to its components
-		fx = f*xd
-		fy = f*yd
-		fz = f*zd
-
-		return fx, fy, fz
+		fx = []
+		for i in range(dim):
+			fx.append(f*xd[i])
+		
+		return np.array(fx)
 		
 
-	def potential_energy(self, xd, yd, zd):
+	def potential_energy(self, xd, dim=3):
 		"""
 		Calculate pe : vectorized
 		"""
-		r2 = (xd**2 + yd**2 + zd**2)**0.5
+		r2 = xd[0]**2
+		for i in range(1, dim):
+			r2 += (xd[i]**2)
 
 		def _pe_cut1(r2):
 			sigma6 = sigma**6

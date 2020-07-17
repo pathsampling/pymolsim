@@ -7,7 +7,7 @@ import os
 class Sim:
 	def __init__(self, atoms, boxdims):
 
-
+		#note that you should still give a box in all three dimensions to trick
 		self.nparticles = len(atoms)
 		self.boxdims = boxdims
 		self.box = np.array([boxdims[0][1]-boxdims[0][0], boxdims[1][1]-boxdims[1][0], boxdims[2][1]-boxdims[2][0]])
@@ -24,9 +24,11 @@ class Sim:
 		self.tot_energy = 0
 		self.pe = 0
 		self.ke = 0
-		self.px = 0
-		self.py = 0
-		self.pz = 0
+
+		self.p = np.zeros(3)
+		#self.px = 0
+		#self.py = 0
+		#self.pz = 0
 		
 		self.integrator = 0
 		self.potential = None
@@ -35,46 +37,50 @@ class Sim:
 
 		#atoms are pyscal atom objects
 		pos = [atom.pos for atom in atoms]
-		self.x = np.array([p[0] for p in pos])
-		self.y = np.array([p[1] for p in pos])
-		self.z = np.array([p[2] for p in pos])
+		self.x = np.array([ np.array([p[0] for p in pos]),
+				            np.array([p[1] for p in pos]),
+				            np.array([p[2] for p in pos]) ])
+
+		#self.x = np.array([p[0] for p in pos])
+		#self.y = np.array([p[1] for p in pos])
+		#self.z = np.array([p[2] for p in pos])
 		self.xd = None
-		self.yd = None
-		self.zd = None
-		self.vx = np.zeros(len(atoms))
-		self.vy = np.zeros(len(atoms))
-		self.vz = np.zeros(len(atoms))
-		self.f = np.zeros((len(atoms), len(atoms)))
+		#self.xd = None
+		#self.yd = None
+		#self.zd = None
+		self.v = None
+		
+		#self.vx = np.zeros(len(atoms))
+		#self.vy = np.zeros(len(atoms))
+		#self.vz = np.zeros(len(atoms))
+		self.f = np.zeros((3, len(atoms), len(atoms)))
 		self.mass = np.ones(len(atoms))
 		self.type = np.ones(len(atoms))
+		self.dim = 3
 
 	def image_distance(self):
-
-		self.xd = np.where(self.xd > self.box_2[0], self.xd-self.box[0], self.xd)
-		self.xd = np.where(self.xd < -self.box_2[0], self.xd+self.box[0], self.xd)
-		self.yd = np.where(self.yd > self.box_2[1], self.yd-self.box[1], self.yd)
-		self.yd = np.where(self.yd < -self.box_2[1], self.yd+self.box[1], self.yd)
-		self.zd = np.where(self.zd > self.box_2[2], self.zd-self.box[2], self.zd)
-		self.zd = np.where(self.zd < -self.box_2[2], self.zd+self.box[2], self.zd)
+		for i in range(self.dim):
+			self.xd[i] = np.where(self.xd[i] > self.box_2[i], self.xd[i]-self.box[i], self.xd[i])
+			self.xd[i] = np.where(self.xd[i] < -self.box_2[i], self.xd[i]+self.box[i], self.xd[i])
 
 	def remap(self):
-		self.x = np.where(self.x > self.box[0], self.x-self.box[0], self.x)
-		self.x = np.where(self.x < 0.0, self.x+self.box[0], self.x)
-		self.y = np.where(self.y > self.box[1], self.y-self.box[1], self.y)
-		self.y = np.where(self.y < 0.0, self.y+self.box[1], self.y)
-		self.z = np.where(self.z > self.box[2], self.z-self.box[2], self.z)
-		self.z = np.where(self.z < 0.0, self.z+self.box[2], self.z)
+		for i in range(self.dim):
+			self.x[i] = np.where(self.x[i] > self.box[i], self.x[i]-self.box[i], self.x[i])
+			self.x[i] = np.where(self.x[i] < 0.0, self.x[i]+self.box[i], self.x[i])
 
 	def vectorize_dist(self):		
 		"""
 		The vectorise method, also need to check pbc
 		"""
-		self.xd = np.meshgrid(self.x, self.x)[1] - np.meshgrid(self.x, self.x)[0]
-		self.yd = np.meshgrid(self.y, self.y)[1] - np.meshgrid(self.y, self.y)[0]
-		self.zd = np.meshgrid(self.z, self.z)[1] - np.meshgrid(self.z, self.z)[0]
+		xdum = []
+		for i in range(self.dim):
+			xd = np.meshgrid(self.x[i], self.x[i])[1] - np.meshgrid(self.x[i], self.x[i])[0]
+			xdum.append(xd)
+		self.xd = np.array(xdum)
+					
 		self.image_distance()		
 	
-	def random_velocity(self, counts):
+	def random_velocity(self, counts=1):
 		"""
 		Generate random velocities
 		"""
@@ -90,23 +96,24 @@ class Sim:
 		self.vectorize_dist()
 
 		#now calculate forces
-		fx, fy, fz = self.potential.forces(self.xd, self.yd, self.zd)
+		fx = self.potential.forces(self.xd, dim=self.dim)
 
 		#finally we should reduce the forces
-		self.fx = np.sum(fx, axis=-1)
-		self.fy = np.sum(fy, axis=-1)
-		self.fz = np.sum(fz, axis=-1)
+		fdum = []
+		for i in range(self.dim):
+			fdum.append(np.sum(fx[i], axis=-1))
+		self.f = np.array(fdum)
 
 	def potential_energy(self):
 
-		energy = self.potential.potential_energy(self.xd, self.yd, self.zd)
+		energy = self.potential.potential_energy(self.xd, dim = self.dim)
 		pe = np.sum(energy)/2
-		#we need to divide by 2 to remove the overcounting
+		#we need to divide by 2 to remove the doublecounting
 		return pe
 
 
 	def kinetic_energy(self):
-		ke = np.sum(self.mass*(self.vx**2 + self.vy**2 + self.vz**2))
+		ke = np.sum(self.mass*(self.v[0]**2 + self.v[1]**2 + self.v[2]**2))
 		return ke
 
 	def total_energy(self):
@@ -115,46 +122,44 @@ class Sim:
 		return pe+ke
 
 	def total_momentum(self):
-		self.px = np.sum(self.mass*self.vx)
-		self.py = np.sum(self.mass*self.vy)
-		self.pz = np.sum(self.mass*self.vz)
+		for i in range(self.dim):
+			self.p[i] = np.sum(self.mass*self.v[i])
 
 	def rescale_velocities(self):
 		ke = self.kinetic_energy()
-		temp = 2.0*ke/(3*self.nparticles - 3.0)
+		temp = 2.0*ke/(self.dim*self.nparticles - self.dim)
 		temp_aim = 1.0/self.beta
 		c = np.sqrt(temp_aim/temp)
 
-		self.vx = self.vx*c
-		self.vy = self.vy*c
-		self.vz = self.vz*c
+		for i in range(self.dim):
+			self.v[i] = self.v[i]*c
 
 	@property
 	def temperature(self):
-		temp = 2.0*self.kinetic_energy()/(3*self.nparticles - 3.0)
+		temp = 2.0*self.kinetic_energy()/(self.dim*self.nparticles - self.dim)
 		return temp
 
 
 	def start(self):
 		
-		self.vx = self.random_velocity(counts=self.nparticles)
-		self.vy = self.random_velocity(counts=self.nparticles)
-		self.vz = self.random_velocity(counts=self.nparticles)
+		dumv = []
+		for i in range(self.dim):
+			dumv.append(self.random_velocity(counts=self.nparticles))
+		self.v = np.array(dumv)
 
 		#find momenta
 		self.total_momentum()
 		ke = self.kinetic_energy()
 
-		self.vx -= self.px/self.nparticles/self.mass
-		self.vy -= self.py/self.nparticles/self.mass
-		self.vz -= self.pz/self.nparticles/self.mass
+		for i in range(self.dim):
+			self.v[i] -= self.p[i]/self.nparticles/self.mass
 
 		#assign thermostats
 		if self.thermostat is None:
 			self.run = self.md_verlet
 		elif self.thermostat.name == "rescale":
 			self.run = self.md_rescale
-		elif self.thermostat.name == "ansersen":
+		elif self.thermostat.name == "andersen":
 			self.run = self.md_andersen
 		elif self.thermostat.name == "langevin":
 			self.run = self.md_langevin
@@ -186,23 +191,21 @@ class Sim:
 	def md_andersen(self):
 		self.md_verlet()
 		rands = np.random.rand(self.nparticles)
-		np.where(rands < self.thermostat.anu*self.dt, np.sqrt(1.0/(self.mass*self.beta))*np.random.normal(), self.vx)
+		for i in range(self.dim):
+			self.v[i] = np.where(rands < self.thermostat.anu*self.dt, np.sqrt(1.0/(self.mass*self.beta))*np.random.normal(), self.v[i])
 		self.remap()
 
 	def langevin_thermo(self):
-		self.vx = self.thermostat.lc1*self.vx + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
-		self.vy = self.thermostat.lc1*self.vy + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
-		self.vz = self.thermostat.lc1*self.vz + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
+		for i in range(self.dim):
+			self.v[i] = self.thermostat.lc1*self.v[i] + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
 
 	def propagate_momenta_half(self):
-		self.vx += 0.5*self.dt*self.fx/self.mass
-		self.vy += 0.5*self.dt*self.fy/self.mass
-		self.vz += 0.5*self.dt*self.fz/self.mass
+		for i in range(self.dim):
+			self.v[i] += 0.5*self.dt*self.f[i]/self.mass
 
 	def propagate_position_half(self):
-		self.x += 0.5*self.dt*self.vx
-		self.y += 0.5*self.dt*self.vy
-		self.z += 0.5*self.dt*self.vz		
+		for i in range(self.dim):
+			self.x[i] += 0.5*self.dt*self.v[i]
 	
 	
 	def dump(self, step):
@@ -227,8 +230,8 @@ class Sim:
 
 		for i, particle in enumerate(self.x):
 			fout.write("%d %d %d "%(i+1, self.type[i], self.mass[i]))
-			fout.write("%f %f %f "%(self.x[i], self.y[i], self.z[i]))
-			fout.write("%f %f %f"%(self.vx[i], self.vy[i], self.vz[i]))
+			fout.write("%f %f %f "%(self.x[0][i], self.x[1][i], self.x[2][i]))
+			fout.write("%f %f %f"%(self.v[0][i], self.v[1][i], self.v[2][i]))
 			fout.write("\n")
 		
 		fout.close()			
