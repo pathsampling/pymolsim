@@ -157,12 +157,16 @@ class Sim:
 		#assign thermostats
 		if self.thermostat is None:
 			self.run = self.md_verlet
+			print("running MD Verlet")
 		elif self.thermostat.name == "rescale":
 			self.run = self.md_rescale
+			print("running with temp rescaling")
 		elif self.thermostat.name == "andersen":
 			self.run = self.md_andersen
+			print("running with Andersen thermostat")
 		elif self.thermostat.name == "langevin":
 			self.run = self.md_langevin
+			print("running with Langevin thermostat")
 		
 		#pe = self.potential_energy()
 	def md_verlet(self):
@@ -174,28 +178,21 @@ class Sim:
 		self.remap()
 
 	def md_rescale(self):
-		self.propagate_momenta_half()
-		self.propagate_position_half()
-		self.propagate_position_half()
-		self.forces()
-		self.propagate_momenta_half()
-		self.remap()
+		self.md_verlet()
 		self.rescale_velocities()
 
 	def md_langevin(self):
 		self.langevin_thermo()
 		self.md_verlet()
 		self.langevin_thermo()
-		self.remap()
+		#self.remap()
 
 	def md_andersen(self):
 		self.md_verlet()
 		rands = np.random.rand(self.nparticles)
 		for i in range(self.dim):
 			self.v[i] = np.where(rands < self.thermostat.anu*self.dt, np.sqrt(1.0/(self.mass*self.beta))*np.random.normal(), self.v[i])
-			#print("worked")
-		self.remap()
-
+		
 	def langevin_thermo(self):
 		for i in range(self.dim):
 			self.v[i] = self.thermostat.lc1*self.v[i] + self.thermostat.lc2/np.sqrt(self.mass)*np.random.normal(size=self.nparticles)
