@@ -193,6 +193,7 @@ class Sim:
 		rands = np.random.rand(self.nparticles)
 		for i in range(self.dim):
 			self.v[i] = np.where(rands < self.thermostat.anu*self.dt, np.sqrt(1.0/(self.mass*self.beta))*np.random.normal(), self.v[i])
+			print("worked")
 		self.remap()
 
 	def langevin_thermo(self):
