@@ -66,6 +66,12 @@ class Sim:
 		if "type" in customkeys:
 			self.type = np.array([int(atom.type) for atom in atoms])
 		
+	def get_distance(self, i, j):
+		self.vectorize_dist()
+		xx = (self.xd[0][i] - self.xd[0][j])**2
+		xx += (self.xd[1][i] - self.xd[1][j])**2
+		xx += (self.xd[2][i] - self.xd[2][j])**2
+		return xx**0.5
 
 	def image_distance(self):
 		for i in range(self.dim):
