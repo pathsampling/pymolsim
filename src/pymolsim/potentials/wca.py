@@ -54,8 +54,8 @@ class WCA:
 		t2f = (4*self.h/self.w**2)*(t2dist - r0 - self.w)*(1 - ((t2dist - r0 - self.w)/self.w)**2)
 		#add the forces
 		for i in range(dim):
-			fx[i][t2atoms[0], t2atoms[1]] += t2f*xd[i]
-			fx[i][t2atoms[1], t2atoms[0]] -= t2f*xd[i]
+			fx[i][t2atoms[0], t2atoms[1]] += t2f*xd[i][t2atoms[0], t2atoms[1]]
+			fx[i][t2atoms[1], t2atoms[0]] -= t2f*xd[i][t2atoms[1], t2atoms[0]]
 		
 		return np.array(fx)
 		
