@@ -14,7 +14,7 @@ class LJ:
 		self.rmin2 = (2.3*sigma)**2
 		self.rmax2 = (2.5*sigma)**2
 
-	def forces(self, xd, dim=3):
+	def forces(self, xd, types, dim=3):
 		"""
 		Vectorized force call
 		input is an natomsxnatoms  arrays
@@ -50,7 +50,7 @@ class LJ:
 		return np.array(fx)
 		
 
-	def potential_energy(self, xd, dim=3):
+	def potential_energy(self, xd, types, dim=3):
 		"""
 		Calculate pe : vectorized
 		"""

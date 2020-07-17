@@ -5,6 +5,7 @@
 
 import numpy as np
 from pymolsim.potentials.lj2cut import LJ
+from pymolsim.potentials.wca import WCA
 
 		
 

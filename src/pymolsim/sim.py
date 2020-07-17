@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 class Sim:
-	def __init__(self, atoms, boxdims):
+	def __init__(self, atoms, boxdims, customkeys=None):
 
 		#note that you should still give a box in all three dimensions to trick
 		self.nparticles = len(atoms)
@@ -49,14 +49,23 @@ class Sim:
 		#self.yd = None
 		#self.zd = None
 		self.v = None
-		
-		#self.vx = np.zeros(len(atoms))
-		#self.vy = np.zeros(len(atoms))
-		#self.vz = np.zeros(len(atoms))
 		self.f = np.zeros((3, len(atoms), len(atoms)))
 		self.mass = np.ones(len(atoms))
 		self.type = np.ones(len(atoms))
 		self.dim = 3
+
+		self.random_velocities = True
+
+		if ("vx" in customkeys) and ("vy" in customkeys) and ("vz" in customkeys):
+			self.random_velocities = False
+			velx = np.array([float(atom.custom["vx"]) for atom in atoms])
+			vely = np.array([float(atom.custom["vy"]) for atom in atoms])
+			velz = np.array([float(atom.custom["vz"]) for atom in atoms])
+			self.v = np.array([velx, vely, velz])
+
+		if "type" in customkeys:
+			self.type = np.array([int(atom.type) for atom in atoms])
+		
 
 	def image_distance(self):
 		for i in range(self.dim):
@@ -96,7 +105,7 @@ class Sim:
 		self.vectorize_dist()
 
 		#now calculate forces
-		fx = self.potential.forces(self.xd, dim=self.dim)
+		fx = self.potential.forces(self.xd, self.type, dim=self.dim)
 
 		#finally we should reduce the forces
 		fdum = []
@@ -106,7 +115,7 @@ class Sim:
 
 	def potential_energy(self):
 
-		energy = self.potential.potential_energy(self.xd, dim = self.dim)
+		energy = self.potential.potential_energy(self.xd, self.type, dim = self.dim)
 		pe = np.sum(energy)/2
 		#we need to divide by 2 to remove the doublecounting
 		return pe
@@ -142,17 +151,18 @@ class Sim:
 
 	def start(self):
 		
-		dumv = []
-		for i in range(self.dim):
-			dumv.append(self.random_velocity(counts=self.nparticles))
-		self.v = np.array(dumv)
+		if self.random_velocities:
+			dumv = []
+			for i in range(self.dim):
+				dumv.append(self.random_velocity(counts=self.nparticles))
+			self.v = np.array(dumv)
 
-		#find momenta
-		self.total_momentum()
-		ke = self.kinetic_energy()
+			#find momenta
+			self.total_momentum()
+			ke = self.kinetic_energy()
 
-		for i in range(self.dim):
-			self.v[i] -= self.p[i]/self.nparticles/self.mass
+			for i in range(self.dim):
+				self.v[i] -= self.p[i]/self.nparticles/self.mass
 
 		#assign thermostats
 		if self.thermostat is None:
