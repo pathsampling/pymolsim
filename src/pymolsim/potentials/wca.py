@@ -8,13 +8,14 @@ See ref J. Chem. Phys., Vol. 118, No. 17, 1 May 2003
 import numpy as np
 
 class WCA:
-	def __init__(self, epsilon=1.0, sigma=1.0, h=15, w=0.5):
+	def __init__(self, epsilon=1.0, sigma=1.0, h=15, w=0.5, moltype=1):
 
 		self.epsilon = epsilon
 		self.sigma = sigma
 		self.h = h
 		self.w = w
 		self.rcutsq = (self.sigma*(2)**(1/6))**2
+		self.moltype = moltype
 
 
 	def forces(self, xd, types, dim=2):
@@ -46,7 +47,7 @@ class WCA:
 
 		#now we have to add the extra force on pairs of atoms
 		#find where the atoms are of type 2
-		t2atoms = np.where(np.array(types)==2)[0]
+		t2atoms = np.where(np.array(types)==self.moltype)[0]
 		#get the distance between t2atoms
 		t2dist = r2[t2atoms[0], t2atoms[1]]
 		#great, now calculate the force between the two atoms
@@ -80,7 +81,7 @@ class WCA:
 		energy = np.where(r2 <= self.rcutsq, _pe_cut1(r2), energy)
 
 		#find where the atoms are of type 2
-		t2atoms = np.where(np.array(types)==2)[0]
+		t2atoms = np.where(np.array(types)==self.moltype)[0]
 		#get the distance between t2atoms
 		t2dist = r2[t2atoms[0], t2atoms[1]]
 		#great, now calculate the force between the two atoms
@@ -91,4 +92,6 @@ class WCA:
 		energy[t2atoms[0], t2atoms[1]] += t2e
 		energy[t2atoms[1], t2atoms[0]] += t2e
 
+		#now reduce energy and remove self interations
+		energy = np.sum(np.triu(energy, k=1))
 		return energy

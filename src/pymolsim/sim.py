@@ -122,9 +122,7 @@ class Sim:
 	def potential_energy(self):
 
 		energy = self.potential.potential_energy(self.xd, self.type, dim = self.dim)
-		pe = np.sum(energy)/2
-		#we need to divide by 2 to remove the doublecounting
-		return pe
+		return energy
 
 
 	def kinetic_energy(self):
